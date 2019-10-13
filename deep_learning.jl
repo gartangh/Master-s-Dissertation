@@ -1,15 +1,15 @@
 using Flux, Flux.Data.MNIST, Statistics
 using Flux: onehotbatch, onecold, crossentropy, throttle
 using Base.Iterators: repeated
-# using CuArrays
+using CuArrays
 
 # Classify MNIST digits with a simple multi-layer-perceptron
 
-imgs = Flux.Data.MNIST.images()
+imgs = MNIST.images()
 # Stack images into one large batch
 X = hcat(float.(reshape.(imgs, :))...) |> gpu
 
-labels = Flux.Data.MNIST.labels()
+labels = MNIST.labels()
 # One-hot-encode the labels
 Y = onehotbatch(labels, 0:9) |> gpu
 
@@ -26,12 +26,12 @@ dataset = repeated((X, Y), 200)
 evalcb = () -> @show(loss(X, Y))
 opt = ADAM()
 
-Flux.train!(loss, params(m), dataset, opt, cb = throttle(evalcb, 10))
+Flux.train!(loss, Flux.params(m), dataset, opt, cb = throttle(evalcb, 10))
 
-accuracy(X, Y)
+println("Train accuracy: ", accuracy(X, Y))
 
 # Test set accuracy
 tX = hcat(float.(reshape.(MNIST.images(:test), :))...) |> gpu
 tY = onehotbatch(MNIST.labels(:test), 0:9) |> gpu
 
-accuracy(tX, tY)
+println("Test accuracy: ", accuracy(tX, tY))
