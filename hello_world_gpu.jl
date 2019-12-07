@@ -1,7 +1,10 @@
 # Packages
 using BenchmarkTools, CuArrays, CUDAnative, CUDAdrv, Revise, Test
 
-# GPU
+# Print name of GPU
+println(CUDAdrv.name(CuDevice(0)))
+
+# GPU   
 N = 2^20
 x_d = CuArrays.fill(1.0f0, N)  # a vector stored on the GPU filled with 1.0 (Float32)
 y_d = CuArrays.fill(2.0f0, N)  # a vector stored on the GPU filled with 2.0

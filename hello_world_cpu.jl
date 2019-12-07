@@ -1,5 +1,9 @@
 # Packages
-using BenchmarkTools, Revise, Test
+using BenchmarkTools, Revise, Test, CUDAdrv
+
+# Print name of GPU
+println(CUDAdrv.name(CuDevice(0)))
+
 
 # CPU
 N = 2^20
