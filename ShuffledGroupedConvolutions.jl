@@ -10,7 +10,7 @@ using Flux
 # ShuffleNet v1 Shufflenet unit with stride=1 stage 2 and using 2 groups
 function shufflenet_v1_stride1()
 println("shufflenet v1 stride=1")
-i  = randn(28, 28, 200, 16)
+i  = randn(28,28,200,16)
 c  = Chain(ShuffledGroupedConvolutions(+, [Conv((1,1), 200=>64, pad=(0,0)) for _ in 1:2]..., split=false),
           #ShuffledGroupedConvolutions(GroupedConvolutions(+, [Conv((1,1), 200=>64, pad=(0,0)) for _ in 1:2]..., split=false),
           #                            ChannelShuffle(2)),
@@ -21,4 +21,4 @@ o  = s(i)
 end
 
 using Test
-println(@test size(shufflenet_v1_stride1()) == (28, 28, 200, 16))
+println(@test size(shufflenet_v1_stride1()) == (28,28,200,16))

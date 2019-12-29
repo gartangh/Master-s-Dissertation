@@ -73,7 +73,7 @@ using Flux
 # NO SPLIT (A)
 function resnext_no_split()
 println("no split")
-i   = randn(7, 7, 256, 16)
+i   = randn(7,7,256,16)
 a() = Chain(Conv((1,1), 256=>4  , pad=(0,0)),
             Conv((3,3), 4  =>4  , pad=(1,1)),
             Conv((1,1), 4  =>256, pad=(0,0)))
@@ -82,35 +82,34 @@ s   = SkipConnection(g, +)
 o   = s(i)
 end
 
-println(@test size(resnext_no_split()) == (7, 7, 256, 16))
+println(@test size(resnext_no_split()) == (7,7,256,16))
 
 # NO SPLIT EARLY CONCATENATION (B)
 function resnext_no_split_early_concatenation()
 println("no split early concatenation")
-i   = randn(7, 7, 256, 16)
+i   = randn(7,7,256,16)
 a() = Chain(Conv((1,1), 256=>4, pad=(0,0)),
             Conv((3,3), 4  =>4, pad=(1,1)))
-g   = GroupedConvolutions((results...) -> cat(results..., dims=3), [a() for _ = 1:32]..., split=false)
-b   = Chain(g, Conv((1,1), 128=>256, pad=(0,0)))
+b   = Chain(GroupedConvolutions((results...) -> cat(results..., dims=3), [a() for _ = 1:32]..., split=false),
+            Conv((1,1), 128=>256, pad=(0,0)))
 s   = SkipConnection(b, +)
 o   = s(i)
 end
 
-println(@test size(resnext_no_split_early_concatenation()) == (7, 7, 256, 16))
+println(@test size(resnext_no_split_early_concatenation()) == (7,7,256,16))
 
 # SPLIT (C)
 function resnext_split()
 println("split")
-i  = randn(7, 7, 256, 16)
-g  = GroupedConvolutions((results...) -> cat(results..., dims=3), [Conv((3,3), 4=>4, pad=(1,1)) for _ = 1:32]..., split=true)
-b  = Chain(Conv((1,1), 256=>128, pad=(0,0)),
-           g,
-           Conv((1,1), 128=>256, pad=(0,0)))
-s  = SkipConnection(b, +)
-o  = s(i)
+i = randn(7,7,256,16)
+b = Chain(Conv((1,1), 256=>128, pad=(0,0)),
+          GroupedConvolutions((results...) -> cat(results..., dims=3), [Conv((3,3), 4=>4, pad=(1,1)) for _ = 1:32]..., split=true),
+          Conv((1,1), 128=>256, pad=(0,0)))
+s = SkipConnection(b, +)
+o = s(i)
 end
 
-println(@test size(resnext_split()) == (7, 7, 256, 16))
+println(@test size(resnext_split()) == (7,7,256,16))
 
 
 
@@ -118,7 +117,7 @@ println(@test size(resnext_split()) == (7, 7, 256, 16))
 # Inception v1 (GoogLeNet) Inception block 3a
 function inception_v1()
 println("inception v1")
-i = randn(28, 28, 192, 16)
+i = randn(28,28,192,16)
 a =       Conv(   (1,1), 192=>64,  pad=(0,0), relu)
 b = Chain(Conv(   (1,1), 192=>96,  pad=(0,0), relu), Conv((3,3), 96 =>128, pad=(1,1), relu))
 c = Chain(Conv(   (1,1), 192=>16,  pad=(0,0), relu), Conv((5,5), 16 =>32 , pad=(2,2), relu))
@@ -128,4 +127,4 @@ o = g(i)
 end
 
 using Test
-@test size(inception_v1()) == (28, 28, 256, 16)
+@test size(inception_v1()) == (28,28,256,16)
