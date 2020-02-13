@@ -4,13 +4,15 @@ using Flux
 using CuArrays
 using CUDAdrv
 
-input = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
-shuffle = ChannelShuffle(8)
+test = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
+shuffle_group = ShuffledGroupedConvolutions(GroupedConvolutions(+, [Conv((1,1), 200=>64, pad=(0,0)) for _ in 1:2]..., split=false),
+                                       ChannelShuffle(2)) |> gpu
 
 # function benchmark()
 #     for _ in 1:1000
-#         shuffle(input)
-#     end
+#         shuffle_group(input)
+#     endGroupedConvolutions(+, [Conv((1,1), 200=>64, pad=(0,0)) for _ in 1:2]..., split=false),
+#           #                            ChannelShuffle(2)
 # end
 
 # println("Benchmarking:")
@@ -19,8 +21,8 @@ shuffle = ChannelShuffle(8)
 # println("Done.")
 
 println("Profiling:")
-shuffle(input)
-CUDAdrv.@profile shuffle(input)
+println(size(shuffle_group(test)))
+# CUDAdrv.@profile shuffle_group(test)
 println("Done.")
 
 

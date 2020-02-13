@@ -4,8 +4,8 @@ using Flux
 using CuArrays
 using CUDAdrv
 
-input = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
-shuffle = ChannelShuffle(8)
+test = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
+shuffle = ChannelShuffle(8) |> gpu
 
 # function benchmark()
 #     for _ in 1:1000
@@ -19,8 +19,8 @@ shuffle = ChannelShuffle(8)
 # println("Done.")
 
 println("Profiling:")
-shuffle(input)
-CUDAdrv.@profile shuffle(input)
+println(size(shuffle(test)))
+# CUDAdrv.@profile shuffle(test)
 println("Done.")
 
 

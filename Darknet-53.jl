@@ -13,63 +13,153 @@ model = Chain(
   BatchNorm(64, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
   # 3-4
-  SkipConnection(Chain(repeat([
+  SkipConnection(Chain(
     Conv((1, 1), 64 => 32, pad=(0, 0), stride=(1, 1)),
     BatchNorm(32, leakyrelu, ϵ=1f-3, momentum=0.99f0),
     Conv((3, 3), 32 => 64, pad=(1, 1), stride=(1, 1)),
     BatchNorm(64, leakyrelu, ϵ=1f-3, momentum=0.99f0)
-  ], 1)...), +),
+  ), +),
   # Residual layer
 
   # 5
-  Conv((3, 3), 64 => 128, pad=(0, 0), stride=(2, 2)),
+  Conv((3, 3), 64 => 128, pad=(1, 1), stride=(2, 2)),
   BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
   # 6-9
-  SkipConnection(Chain(repeat([
+  SkipConnection(Chain(
+    Conv((1, 1), 128 => 64, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(64, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 64 => 128, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
     Conv((1, 1), 128 => 64, pad=(0, 0), stride=(1, 1)),
     BatchNorm(64, leakyrelu, ϵ=1f-3, momentum=0.99f0),
     Conv((3, 3), 64 => 128, pad=(1, 1), stride=(1, 1)),
     BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0)
-  ], 2)...), +),
+  ), +),
 
   # 10
-  Conv((3, 3), 128 => 256, pad=(0, 0), stride=(2, 2)),
+  Conv((3, 3), 128 => 256, pad=(1, 1), stride=(2, 2)),
   BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
   # 11-26
-  SkipConnection(Chain(repeat([
+  SkipConnection(Chain(
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
     Conv((1, 1), 256 => 128, pad=(0, 0), stride=(1, 1)),
     BatchNorm(128, leakyrelu, ϵ=1f-3, momentum=0.99f0),
     Conv((3, 3), 128 => 256, pad=(1, 1), stride=(1, 1)),
     BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0)
-  ], 8)...), +),
+  ), +),
   # Residual layer
 
   # 27
-  Conv((3, 3), 256 => 512, pad=(0, 0), stride=(2, 2)),
+  Conv((3, 3), 256 => 512, pad=(1, 1), stride=(2, 2)),
   BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
   # 28-43
-  SkipConnection(Chain(repeat([
+  SkipConnection(Chain(
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
     Conv((1, 1), 512 => 256, pad=(0, 0), stride=(1, 1)),
     BatchNorm(256, leakyrelu, ϵ=1f-3, momentum=0.99f0),
     Conv((3, 3), 256 => 512, pad=(1, 1), stride=(1, 1)),
     BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0)
-  ], 8)...), +),
+  ), +),
   # Residual layer
 
   # 44
-  Conv((3, 3), 512 => 1024, pad=(0, 0), stride=(2, 2)),
+  Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(2, 2)),
   BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
   # 45-52
-  SkipConnection(Chain(repeat([
+  SkipConnection(Chain(
+    Conv((1, 1), 1024 => 512, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 1024 => 512, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
+    Conv((1, 1), 1024 => 512, pad=(0, 0), stride=(1, 1)),
+    BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+    Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(1, 1)),
+    BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0),
+
     Conv((1, 1), 1024 => 512, pad=(0, 0), stride=(1, 1)),
     BatchNorm(512, leakyrelu, ϵ=1f-3, momentum=0.99f0),
     Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(1, 1)),
     BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0)
-  ], 4)...), +),
+  ), +),
   # Residual layer
 
   # # 53
@@ -110,8 +200,8 @@ model = Chain(
 # benchmark(Darknet53(), 5, [1, 10, 100, 1000], (256, 256, 3, 1))
 
 println("Profiling:")
-test = randn(Float32, (256, 256, 3, 1)) |> gpu
+test = randn(Float32, (256, 256, 3, 16)) |> gpu
 model(test)
-test = randn(Float32, (256, 256, 3, 1)) |> gpu
+test = randn(Float32, (256, 256, 3, 16)) |> gpu
 CUDAdrv.@profile model(test)
 println("DONE.")
