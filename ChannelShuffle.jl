@@ -20,7 +20,7 @@ shuffle = ChannelShuffle(8) |> gpu
 
 println("Profiling:")
 println(size(shuffle(test)))
-# CUDAdrv.@profile shuffle(test)
+CUDAdrv.@profile shuffle(test)
 println("Done.")
 
 

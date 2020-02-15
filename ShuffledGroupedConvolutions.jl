@@ -22,7 +22,7 @@ shuffle_group = ShuffledGroupedConvolutions(GroupedConvolutions(+, [Conv((1,1), 
 
 println("Profiling:")
 println(size(shuffle_group(test)))
-# CUDAdrv.@profile shuffle_group(test)
+CUDAdrv.@profile shuffle_group(test)
 println("Done.")
 
 

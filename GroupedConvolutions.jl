@@ -26,8 +26,8 @@ println(group)
 println("Profiling:")
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
 println(size(group(test)))
-# test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
-# CUDAdrv.@profile group(test)
+test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
+CUDAdrv.@profile group(test)
 println("DONE.")
 
 # concat
@@ -47,8 +47,8 @@ println(group)
 println("Profiling:")
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
 println(size(group(test)))
-# test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
-# CUDAdrv.@profile group(test)
+test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
+CUDAdrv.@profile group(test)
 println("DONE.")
 
 
