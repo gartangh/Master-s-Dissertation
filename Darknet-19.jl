@@ -59,13 +59,14 @@ model = Chain(
   Conv((3, 3), 512 => 1024, pad=(1, 1), stride=(1, 1)),
   BatchNorm(1024, leakyrelu, ϵ=1f-3, momentum=0.99f0),
 
-  # # 19
-  # Conv((1, 1), 1024 => 1000, pad=(0, 0), stride=(1, 1)),
-  # # Global Mean Pooling layer
-  # GlobalMeanPool(),
-  # # Flattening layer with softmax activation
-  # Flatten(softmax)
-  ) |> gpu
+  # 19
+  Conv((1, 1), 1024 => 1000, pad=(0, 0), stride=(1, 1)),
+  # Global Mean Pooling layer
+  GlobalMeanPool(),
+  # Flattening layer with softmax activation
+  softmax,
+  flatten
+  )
 
 # function timing(model, n::Integer, size::NTuple{4,Integer})
 #   for i = 1:n
@@ -98,8 +99,8 @@ model = Chain(
 # benchmark(model, 5, [1, 10, 100, 1000], (224, 224, 3, 1))
 
 println("Profiling:")
-test = randn(Float32, (224, 224, 3, 1)) |> gpu
+test = randn(Float32, (224, 224, 3, 1))
 model(test)
-test = randn(Float32, (224, 224, 3, 1)) |> gpu
+test = randn(Float32, (224, 224, 3, 1))
 CUDAdrv.@profile model(test)
 println("DONE.")
