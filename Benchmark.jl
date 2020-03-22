@@ -1,38 +1,67 @@
+# imports
 using Revise
-using Test
 using Flux
 using CuArrays
 using CUDAdrv
+using CUDAnative
 using BenchmarkTools
 
-# time on GPU, assumes synchronized
-println("ELAPSED")
-a = CuArrays.rand(1024,1024,128);
-sin.(a); # warmup
-println(Base.@elapsed sin.(a))  # WRONG!
-println(CUDAdrv.@elapsed sin.(a))
+# define things to benchmark in a function
+function benchmark(a)
+    sin.(a);
+    cos.(a);
+end
 
-# time on GPU, will synchronize by itself
-println("TIME")
-Base.@time sin.(a);
-CuArrays.@time sin.(a);
+function profile(a)
+    NVTX.mark("Started Profiling sin");
+    NVTX.@range "Profiling sin" begin
+        sin.(a);
+    end
+    NVTX.mark("Finished Profiling sin");
 
-# More robust measurements
-println("BENCHMARK")
-@benchmark CuArrays.@sync sin.(a)
+    NVTX.mark("Started Profiling cos");
+    NVTX.@range "Profiling cos" begin
+        sin.(a);
+    end
+    NVTX.mark("Finished Profiling cos");
+end
 
-# time on GPU, wrapper of @benchmark, with output as @time
-println("BTIME")
-@btime sin.(a);
+function main(; benchmarking=true, profiling=true)
+    # initialization
+    a = CuArrays.rand(1024,1024,128);
 
-# Profile larger applications
-println("PROFILE")
-CUDAdrv.@profile sin.(a);
+    # BENCHMARKIMG
+    if (benchmarking == true)
+        println("BENCHMARKING");
 
-# Interactively profile larger applications
-# nsys launch ~/Programs/julia-1.3.1/bin/julia
-# ] activate .
-# using CuArrays, CUDAdrv
-# a = CuArrays.rand(1024,1024,1024);
-# sin.(a);
-# CUDAdrv.@profile sin.(a);
+        # warmup
+        benchmark(a);
+        # make sure the GPU is synchronized first
+        CUDAdrv.synchronize();
+
+        # get timing
+        # '$', because external variables should be explicitly interpolated into the benchmark expression!
+        t = @benchmark CuArrays.@sync(benchmark($a)); #samples=100 seconds=10;
+        print(IOContext(stdout, :compact => false), t);
+        # get GPU allocations
+        CuArrays.@time benchmark(a) # synchronizes afterwards by itself
+    end
+
+    # PROFILING
+    if (profiling == true)
+        println("PROFILING");
+
+        # warmup
+        profile(a);
+        # make sure the GPU is synchronized first
+        CUDAdrv.synchronize();
+
+        # profile
+        CUDAdrv.@profile profile(a);
+    end
+end
+
+println("")
+println("")
+CUDAnative.device!(0)
+main(benchmarking=true, profiling=true)
