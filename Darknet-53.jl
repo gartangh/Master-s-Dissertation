@@ -85,7 +85,7 @@ function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEV
   end
 
   if (device == GPU)
-    println("GPU:", DEVICE_ID);
+    println("GPU:", DEVICE_ID, CUDAdrv.name(CuDevice(DEVICE_ID)));
     CUDAnative.device!(DEVICE_ID);
     model_gpu = model |> gpu;
     for input in inputs
@@ -99,7 +99,7 @@ function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEV
   end
 
   if (device == GPU_Torch)
-    println("GPU Torch:", DEVICE_ID);
+    println("GPU Torch:", DEVICE_ID, CUDAdrv.name(CuDevice(DEVICE_ID)));
     model_gpu_torch = Flux.fmap(Torch.to_tensor, model);
     for input in inputs
       println("--> ", size(input))
@@ -282,11 +282,10 @@ model = Chain(
   );
 inputs = [
   randn(Float32, (256, 256, 3, 1)),
+  randn(Float32, (256, 256, 3, 4)),
   randn(Float32, (256, 256, 3, 16)),
-  # randn(Float32, (256, 256, 3, 64)),
-  # randn(Float32, (256, 256, 3, 256)),
-  # randn(Float32, (256, 256, 3, 1024)),
-  # randn(Float32, (256, 256, 3, 4096)),
+  randn(Float32, (256, 256, 3, 64)),
+  randn(Float32, (256, 256, 3, 256)),
 ];
 
 # set parameters
