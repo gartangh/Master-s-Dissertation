@@ -85,7 +85,7 @@ function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEV
   end
 
   if (device == GPU)
-    println("GPU:", DEVICE_ID, CUDAdrv.name(CuDevice(DEVICE_ID)));
+    println("GPU:", DEVICE_ID, " ", CUDAdrv.name(CuDevice(DEVICE_ID)));
     CUDAnative.device!(DEVICE_ID);
     model_gpu = model |> gpu;
     for input in inputs
@@ -99,7 +99,7 @@ function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEV
   end
 
   if (device == GPU_Torch)
-    println("GPU Torch:", DEVICE_ID, CUDAdrv.name(CuDevice(DEVICE_ID)));
+    println("GPU Torch:", DEVICE_ID, " ", CUDAdrv.name(CuDevice(DEVICE_ID)));
     model_gpu_torch = Flux.fmap(Torch.to_tensor, model);
     for input in inputs
       println("--> ", size(input))
