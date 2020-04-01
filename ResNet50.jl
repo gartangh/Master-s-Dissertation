@@ -100,7 +100,7 @@ function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEV
 
   if (device == GPU_Torch)
     println("GPU Torch:", DEVICE_ID);
-    model_gpu_torch = Flux.fmap(Torch.to_tensor, model);
+    model_gpu_torch = Flux.fmap(Torch.to_tensor, model.layers); # add .layers for VGG19 and ResNet50
     for input in inputs
       println("--> ", size(input))
       input_gpu_torch = tensor(input, dev=DEVICE_ID);
