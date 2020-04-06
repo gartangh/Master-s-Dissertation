@@ -179,12 +179,12 @@ model = Chain(
   softmax
 );
 inputs = [
-  randn(Float32, (224, 224, 3, 1)),
-  randn(Float32, (224, 224, 3, 4)),
-  randn(Float32, (224, 224, 3, 16)),
+#  randn(Float32, (224, 224, 3, 1)),
+#  randn(Float32, (224, 224, 3, 4)),
+#  randn(Float32, (224, 224, 3, 16)),
   randn(Float32, (224, 224, 3, 64)),
-  randn(Float32, (224, 224, 3, 256)),
+#  randn(Float32, (224, 224, 3, 256)),
 ];
 
 # set parameters
-main(model, inputs, GPU, benchmarking=true, profiling=false, DEVICE_ID=0);
+main(model, inputs, GPU, benchmarking=false, profiling=true, DEVICE_ID=0);
