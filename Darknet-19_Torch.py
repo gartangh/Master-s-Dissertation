@@ -6,7 +6,9 @@ import torchvision.models as models
 from collections import OrderedDict
 from torch import nn
 
-
+DEVICE_ID=0
+device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
+print(device)
 
 class BaseModel(nn.Module):
     """
@@ -146,16 +148,13 @@ class Darknet19(BaseModel):
         return out
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
+def benchmark(batchsize=64):
+    m = models.Darknet19().to(device)
+    ip = torch.randn(batchsize, 3, 299, 299).to(device)
 
-darknet = Darknet19()
-darknet.to(device)
-ip = torch.randn(16, 3, 224, 224)
-ip = ip.to(device)
-# warmup
-op = darknet(ip)
+    # warmup
+    m(ip)
 
-torch.cuda.nvtx.range_push("Darknet-19")
-op = darknet(ip)
-torch.cuda.nvtx.range_pop()
+    torch.cuda.nvtx.range_push("Profiling")
+    m(ip)
+    torch.cuda.nvtx.range_pop()

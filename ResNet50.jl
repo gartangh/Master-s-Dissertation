@@ -1,129 +1,101 @@
-# imports
 using Revise
 using BenchmarkTools
-using CuArrays
-using CUDAdrv
-using CUDAnative
-using Flux
-using Metalhead
+using Flux, Metalhead
+using CuArrays, CUDAdrv, CUDAnative
 using Torch
 
-# benchmark
-function benchmark(m, i; device=CPU)
-  println("----> Benchmarking");
+DEVICE_ID = 0
+println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
-  # warmup
-  inner_benchmark(m, i);
-
-  if (device == CPU)
-    # get timing
-    # '$', because external variables should be explicitly interpolated into the benchmark expression!
-    t = @benchmark inner_benchmark($m, $i);
-    println(IOContext(stdout, :compact => false), t);
-
-    # get memory allocations
-    @time inner_benchmark(m, i)
-  else
-    # make sure the GPU is synchronized first
-    CUDAdrv.synchronize();
-
-    # get timing
-    # '$', because external variables should be explicitly interpolated into the benchmark expression!
-    t = @benchmark CuArrays.@sync(inner_benchmark($m, $i));
-    println(IOContext(stdout, :compact => false), t);
-    # get memory allocations
-    # synchronizes afterwards by itself
-    CuArrays.@time inner_benchmark(m, i)
-  end
-
-  println("");
+function fw_aten(m, ip)
+    m(ip)
+    Torch.sync()
 end
 
-# inner_benchmark
-function inner_benchmark(m, i)
-  m(i);
+function fw(m, ip)
+    CuArrays.@sync m(ip)
 end
 
-# profile
-function profile(m, i)
-  println("----> Profiling");
-
-  # warmup
-  inner_profile(m, i);
-  # make sure the GPU is synchronized first
-  CUDAdrv.synchronize();
-
-  # profile
-  CUDAdrv.@profile inner_profile(m, i);
-
-  println("");
+# Follow the CuArrays way
+function (tbn::BatchNorm)(x::Tensor)
+    tbn.λ.(Torch.batchnorm(
+        x,
+        tbn.γ,
+        tbn.β,
+        tbn.μ,
+        tbn.σ²,
+        0,
+        tbn.momentum,
+        tbn.ϵ,
+        1,
+    ))
 end
 
-# inner profile
-function inner_profile(m, i)
-  NVTX.mark("Started Profiling");
-  NVTX.@range "Profiling" begin
-    m(i);
-  end
-  NVTX.mark("Finished Profiling");
-end
+to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
+to_tensor(x) = x
 
-# main
-function main(model, inputs, device=CPU; benchmarking=true, profiling=false, DEVICE_ID=0)
-  if (device == CPU)
-    println("CPU");
-    for input in inputs
-      println("--> ", size(input))
-      model_cpu = model |> cpu;
-      input_cpu = input |> cpu;
-      benchmarking == true && benchmark(model_cpu, input_cpu, device=device);
-      # cannot profile on CPU
-      # profiling == true && profile(model_cpu, input_cpu);
-      println("");
+function cuarrays(batchsize = 64)
+    resnet = ResNet()
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    gresnet = resnet |> gpu
+    gip = ip |> gpu
+
+    # warmup
+    fw(gresnet, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    b = @benchmarkable(
+        fw($gresnet, $gip),
+        teardown = (GC.gc(); CuArrays.reclaim())
+    )
+    display(run(b))
+
+    CuArrays.@time fw(gresnet, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    NVTX.@range "Profiling CuArrays" begin
+        CUDAdrv.@profile fw(gresnet, gip)
     end
-    println("");
-  end
-
-  if (device == GPU)
-    println("GPU:", DEVICE_ID, " ", CUDAdrv.name(CuDevice(DEVICE_ID)));
-    CUDAnative.device!(DEVICE_ID);
-    model_gpu = model |> gpu;
-    for input in inputs
-      println("--> ", size(input))
-      input_gpu = input |> gpu;
-      benchmarking == true && benchmark(model_gpu, input_gpu, device=device);
-      profiling == true && profile(model_gpu, input_gpu);
-      println("");
-    end
-    println("");
-  end
-
-  if (device == GPU_Torch)
-    println("GPU Torch:", DEVICE_ID, " ", CUDAdrv.name(CuDevice(DEVICE_ID)));
-    model_gpu_torch = Flux.fmap(Torch.to_tensor, model);
-    for input in inputs
-      println("--> ", size(input))
-      input_gpu_torch = tensor(input, dev=DEVICE_ID);
-      benchmarking == true && benchmark(model_gpu_torch, input_gpu_torch, device=device);
-      profiling == true && profile(model_gpu_torch, input_gpu_torch);
-      println("");
-    end
-    println("");
-  end
+    println()
 end
 
-# devices
-@enum Device CPU GPU GPU_Torch
+function torch(batchsize = 64)
+    resnet = ResNet()
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
 
-# initialize model and inputs
-model = ResNet()
-inputs = [
-  randn(Float32, (224, 224, 3, 1)),
-  randn(Float32, (224, 224, 3, 4)),
-  randn(Float32, (224, 224, 3, 16)),
-  randn(Float32, (224, 224, 3, 64)),
-  randn(Float32, (224, 224, 3, 256)),
-];
+    tresnet = Flux.fmap(to_tensor, resnet.layers)
+    tip = tensor(ip, dev = DEVICE_ID)
 
-# set parameters
-main(model, inputs, GPU_Torch, benchmarking=false, profiling=true, DEVICE_ID=0);
+    # warmup
+    fw_aten(tresnet, tip)
+    GC.gc()
+    yield()
+    Torch.clear_cache()
+
+    b = @benchmarkable(
+        fw_aten($tresnet, $tip),
+        teardown = (GC.gc(); yield(); Torch.clear_cache())
+    )
+    display(run(b))
+
+    CuArrays.@time fw(tresnet, tip)
+    GC.gc()
+    yield()
+    Torch.clear_cache()
+
+    NVTX.@range "Profiling Torch" begin
+        CUDAdrv.@profile fw_aten(tresnet, tip)
+    end
+    println()
+end

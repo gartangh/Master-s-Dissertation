@@ -6,7 +6,7 @@ device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu
 print(device)
 
 def benchmark(batchsize=64):
-    m = models.inception_v3(aux_logits=False).to(device)
+    m = models.resnet50().to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 
     # warmup

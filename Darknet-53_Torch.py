@@ -73,20 +73,13 @@ class Darknet53(nn.Module):
         return nn.Sequential(*layers)
 
 
-def darknet53(num_classes=1000):
-    return Darknet53(DarkResidualBlock, num_classes)
+def benchmark(batchsize=64):
+    m = models.Darknet53(DarkResidualBlock, 1000).to(device)
+    ip = torch.randn(batchsize, 3, 299, 299).to(device)
 
+    # warmup
+    m(ip)
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
-
-darknet = darknet53()
-darknet.to(device)
-ip = torch.randn(8, 3, 224, 224)
-ip = ip.to(device)
-# warmup
-op = darknet(ip)
-
-torch.cuda.nvtx.range_push("Darknet-53")
-op = darknet(ip)
-torch.cuda.nvtx.range_pop()
+    torch.cuda.nvtx.range_push("Profiling")
+    m(ip)
+    torch.cuda.nvtx.range_pop()
