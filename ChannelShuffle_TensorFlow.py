@@ -35,4 +35,3 @@ print(output)
 # test = np.arange(1, 1 * 1 * 1 * 8 + 1, 1).reshape((1, 1, 1, 8))
 # output = channel_shuffle2(2, tf.convert_to_tensor(test))
 # print(output)
-

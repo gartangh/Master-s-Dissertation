@@ -5,7 +5,6 @@ import tensorflow as tf
 from tensorflow.keras.losses import MAE
 from tensorflow.keras.application import VGG19
 
-
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 tf.config.optimizer.set_jit(True)  # XLA enabled
@@ -13,17 +12,17 @@ tf.config.optimizer.set_jit(True)  # XLA enabled
 
 @nvtx_tf.ops.trace(message='Model', domain_name='Forward',
                    grad_domain_name='Gradient', enabled=True, trainable=True)
-def profile(test):
-    return model.predict(test)
+def profile(m, ip):
+    return m.predict(ip)
 
 
 def benchmark(batchsize=64):
-    model = VGG19()
-    model.compile(optimizer='adam', loss=MAE)
-    model.summary()
-    test = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
+    m = VGG19()
+    m.compile(optimizer='adam', loss=MAE)
+    m.summary()
+    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
     # warmup
-    profile(test)
+    profile(m, ip)
 
-    profile(test)
+    profile(m, ip)

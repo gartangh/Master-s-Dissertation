@@ -6,7 +6,6 @@ from tensorflow.keras.layers import BatchNormalization, Conv2D, LeakyReLU, Globa
 from tensorflow.keras.losses import MAE
 from tensorflow.keras.models import Sequential
 
-
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 tf.config.optimizer.set_jit(True)  # XLA enabled

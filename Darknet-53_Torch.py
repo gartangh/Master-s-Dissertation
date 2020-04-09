@@ -1,6 +1,10 @@
-
 import torch
 from torch import nn
+
+DEVICE_ID = 0
+device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
+print(device)
+
 
 def conv_batch(in_num, out_num, kernel_size=3, padding=1, stride=1):
     return nn.Sequential(
@@ -14,7 +18,7 @@ class DarkResidualBlock(nn.Module):
     def __init__(self, in_channels):
         super(DarkResidualBlock, self).__init__()
 
-        reduced_channels = int(in_channels/2)
+        reduced_channels = int(in_channels / 2)
 
         self.layer1 = conv_batch(in_channels, reduced_channels, kernel_size=1, padding=0)
         self.layer2 = conv_batch(reduced_channels, in_channels)
@@ -74,7 +78,7 @@ class Darknet53(nn.Module):
 
 
 def benchmark(batchsize=64):
-    m = models.Darknet53(DarkResidualBlock, 1000).to(device)
+    m = Darknet53(DarkResidualBlock, 1000).to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 
     # warmup
@@ -83,3 +87,7 @@ def benchmark(batchsize=64):
     torch.cuda.nvtx.range_push("Profiling")
     m(ip)
     torch.cuda.nvtx.range_pop()
+
+
+if __name__ == '__main__':
+    benchmark(4)

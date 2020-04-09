@@ -6,3 +6,5 @@ deps/deps.jl
 __pycache__/
 
 *.qdrep
+
+.idea/
