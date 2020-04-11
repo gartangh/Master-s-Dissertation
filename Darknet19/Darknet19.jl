@@ -4,7 +4,7 @@ using Flux
 using CuArrays, CUDAdrv, CUDAnative
 using Torch
 
-DEVICE_ID = 0
+DEVICE_ID = 6
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 Darknet() = Chain(
@@ -97,7 +97,7 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function cuarrays(batchsize = 256)
+function cuarrays(batchsize)
     darknet = Darknet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
@@ -129,7 +129,7 @@ function cuarrays(batchsize = 256)
     println()
 end
 
-function torch(batchsize = 256)
+function torch(batchsize)
     darknet = Darknet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()

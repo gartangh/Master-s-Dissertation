@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-DEVICE_ID = 0
+DEVICE_ID = 6
 device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
 print(device)
 
@@ -77,7 +77,7 @@ class Darknet53(nn.Module):
         return nn.Sequential(*layers)
 
 
-def benchmark(batchsize=256):
+def benchmark(batchsize):
     m = Darknet53(DarkResidualBlock, 1000).to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 

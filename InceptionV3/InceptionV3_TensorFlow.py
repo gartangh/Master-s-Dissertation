@@ -7,7 +7,7 @@ from numpy.random import randn
 from tensorflow.keras.application import InceptionV3
 from tensorflow.keras.losses import MAE
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '6'
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 tf.config.optimizer.set_jit(True)  # XLA enabled
@@ -19,7 +19,7 @@ def profile(m, ip):
     return m.predict(ip)
 
 
-def benchmark(batchsize=256):
+def benchmark(batchsize):
     m = InceptionV3()
     m.compile(optimizer='adam', loss=MAE)
     ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))

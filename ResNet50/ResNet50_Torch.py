@@ -1,12 +1,12 @@
 import torch
 import torchvision.models as models
 
-DEVICE_ID = 0
+DEVICE_ID = 6
 device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 
-def benchmark(batchsize=64):
+def benchmark(batchsize):
     m = models.resnet50().to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 

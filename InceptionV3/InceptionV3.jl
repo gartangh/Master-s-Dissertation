@@ -4,11 +4,11 @@ using Flux, Metalhead
 using CuArrays, CUDAdrv, CUDAnative
 using Torch
 
-DEVICE_ID = 0
+DEVICE_ID = 6
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 Inception() = Chain(
-# TODO
+    # TODO
 )
 
 function fw_aten(m, ip)
@@ -38,7 +38,7 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function cuarrays(batchsize = 256)
+function cuarrays(batchsize)
     inception = Inception()
     ip = rand(Float32, 299, 299, 3, batchsize)
     GC.gc()
@@ -70,7 +70,7 @@ function cuarrays(batchsize = 256)
     println()
 end
 
-function torch(batchsize = 256)
+function torch(batchsize)
     inception = Inception()
     ip = rand(Float32, 299, 299, 3, batchsize)
     GC.gc()
