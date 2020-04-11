@@ -77,7 +77,7 @@ class Darknet53(nn.Module):
         return nn.Sequential(*layers)
 
 
-def benchmark(batchsize=64):
+def benchmark(batchsize=256):
     m = Darknet53(DarkResidualBlock, 1000).to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 

@@ -197,7 +197,7 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function cuarrays(batchsize = 64)
+function cuarrays(batchsize = 256)
   darknet = Darknet()
   ip = rand(Float32, 224, 224, 3, batchsize)
   GC.gc()
@@ -229,7 +229,7 @@ function cuarrays(batchsize = 64)
   println()
 end
 
-function torch(batchsize = 64)
+function torch(batchsize = 256)
   darknet = Darknet()
   ip = rand(Float32, 224, 224, 3, batchsize)
   GC.gc()

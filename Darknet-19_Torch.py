@@ -1,8 +1,9 @@
 import logging
+from collections import OrderedDict
+
 import numpy as np
 import torch
 import torch.nn.functional as F
-from collections import OrderedDict
 from torch import nn
 
 DEVICE_ID = 0
@@ -149,7 +150,7 @@ class Darknet19(BaseModel):
         return out
 
 
-def benchmark(batchsize=64):
+def benchmark(batchsize=256):
     m = Darknet19().to(device)
     ip = torch.randn(batchsize, 3, 299, 299).to(device)
 
