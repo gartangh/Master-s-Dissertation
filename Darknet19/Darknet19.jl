@@ -4,7 +4,7 @@ using Flux
 using CuArrays, CUDAdrv, CUDAnative
 using Torch
 
-DEVICE_ID = 6
+DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 Darknet() = Chain(
