@@ -38,68 +38,102 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function cuarrays(batchsize)
-    inception = Inception()
+function benchmark_julia(batchsize)
+    m = Inception()
     ip = rand(Float32, 299, 299, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    ginception = inception |> gpu
+    gm = m |> gpu
     gip = ip |> gpu
 
     # warmup
-    fw(ginception, gip)
+    fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
 
     b = @benchmarkable(
-        fw($ginception, $gip),
+        fw($gm, $gip),
         teardown = (GC.gc(); CuArrays.reclaim())
     )
     display(run(b))
 
-    CuArrays.@time fw(ginception, gip)
-    GC.gc()
-    CuArrays.reclaim()
+    CuArrays.@time fw(gm, gip)
 
-    NVTX.@range "Profiling CuArrays" begin
-        CUDAdrv.@profile fw(ginception, gip)
-    end
     println()
 end
 
-function torch(batchsize)
-    inception = Inception()
+function benchmark_torchjl(batchsize)
+    m = Inception()
     ip = rand(Float32, 299, 299, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tinception = Flux.fmap(to_tensor, inception)
+    tm = Flux.fmap(to_tensor, m)
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warmup
-    fw_aten(tinception, tip)
+    fw_aten(tm, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
 
     b = @benchmarkable(
-        fw_aten($tinception, $tip),
+        fw_aten($tm, $tip),
         teardown = (GC.gc(); yield(); Torch.clear_cache())
     )
     display(run(b))
 
-    CuArrays.@time fw(tinception, tip)
+    CuArrays.@time fw(tm, tip)
+
+    println()
+end
+
+function profile_julia(batchsize)
+    m = Inception()
+    ip = rand(Float32, 299, 299, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    gm = m |> gpu
+    gip = ip |> gpu
+
+    # warmup
+    fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    NVTX.@range "Profiling CuArrays" begin
+        CUDAdrv.@profile fw(gm, gip)
+    end
+    println()
+end
+
+function profile_torchjl(batchsize)
+    m = Inception()
+    ip = rand(Float32, 299, 299, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    tm = Flux.fmap(to_tensor, m)
+    tip = tensor(ip, dev = DEVICE_ID)
+
+    # warmup
+    fw_aten(tm, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
 
     NVTX.@range "Profiling Torch" begin
-        CUDAdrv.@profile fw_aten(tinception, tip)
+        CUDAdrv.@profile fw_aten(tm, tip)
     end
     println()
 end

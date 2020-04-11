@@ -97,68 +97,102 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function cuarrays(batchsize)
-    darknet = Darknet()
+function benchmark_julia(batchsize)
+    m = Darknet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    gdarknet = darknet |> gpu
+    gm = m |> gpu
     gip = ip |> gpu
 
     # warmup
-    fw(gdarknet, gip)
+    fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
 
     b = @benchmarkable(
-        fw($gdarknet, $gip),
+        fw($gm, $gip),
         teardown = (GC.gc(); CuArrays.reclaim())
     )
     display(run(b))
 
-    CuArrays.@time fw(gdarknet, gip)
-    GC.gc()
-    CuArrays.reclaim()
+    CuArrays.@time fw(gm, gip)
 
-    NVTX.@range "Profiling CuArrays" begin
-        CUDAdrv.@profile fw(gdarknet, gip)
-    end
     println()
 end
 
-function torch(batchsize)
-    darknet = Darknet()
+function benchmark_torchjl(batchsize)
+    m = Darknet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tdarknet = Flux.fmap(to_tensor, darknet)
+    tm = Flux.fmap(to_tensor, m)
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warmup
-    fw_aten(tdarknet, tip)
+    fw_aten(tm, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
 
     b = @benchmarkable(
-        fw_aten($tdarknet, $tip),
+        fw_aten($tm, $tip),
         teardown = (GC.gc(); yield(); Torch.clear_cache())
     )
     display(run(b))
 
-    CuArrays.@time fw(tdarknet, tip)
+    CuArrays.@time fw(tm, tip)
+
+    println()
+end
+
+function profile_julia(batchsize)
+    m = Darknet()
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    gm = m |> gpu
+    gip = ip |> gpu
+
+    # warmup
+    fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    NVTX.@range "Profiling CuArrays" begin
+        CUDAdrv.@profile fw(gm, gip)
+    end
+    println()
+end
+
+function profile_torchjl(batchsize)
+    m = Darknet()
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    tm = Flux.fmap(to_tensor, m)
+    tip = tensor(ip, dev = DEVICE_ID)
+
+    # warmup
+    fw_aten(tm, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
 
     NVTX.@range "Profiling Torch" begin
-        CUDAdrv.@profile fw_aten(tdarknet, tip)
+        CUDAdrv.@profile fw_aten(tm, tip)
     end
     println()
 end
