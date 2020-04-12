@@ -8,14 +8,14 @@ DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 function fw_aten(m, ip)
-    NVTX.@range "Profiling Julia" begin
+    NVTX.@range "Profiling Torch.jl" begin
         m(ip)
         Torch.sync()
     end
 end
 
 function fw(m, ip)
-    NVTX.@range "Profiling Torch.jl" begin
+    NVTX.@range "Profiling Julia" begin
         CuArrays.@sync m(ip)
     end
 end
@@ -88,7 +88,7 @@ function benchmark_torchjl(batchsize)
     )
     display(run(b))
 
-    CuArrays.@time fw(tm, tip)
+    CuArrays.@time fw_aten(tm, tip)
 
     println()
 end

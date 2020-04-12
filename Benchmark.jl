@@ -7,9 +7,7 @@ function fw_aten(m, ip)
     Torch.sync()
 end
 function fw(m, ip)
-    CuArrays.@sync m(ip)cuarrays(256)
-
-torch(256)
+    CuArrays.@sync m(ip)
 end
 # Follow the CuArrays way
 function (tbn::BatchNorm)(x::Tensor)
