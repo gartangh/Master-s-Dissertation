@@ -8,12 +8,16 @@ DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 function fw_aten(m, ip)
-    m(ip)
-    Torch.sync()
+    NVTX.@range "Profiling Julia" begin
+        m(ip)
+        Torch.sync()
+    end
 end
 
 function fw(m, ip)
-    CuArrays.@sync m(ip)
+    NVTX.@range "Profiling Torch.jl" begin
+        CuArrays.@sync m(ip)
+    end
 end
 
 # Follow the CuArrays way
@@ -105,9 +109,8 @@ function profile_julia(batchsize)
     GC.gc()
     CuArrays.reclaim()
 
-    NVTX.@range "Profiling CuArrays" begin
-        CUDAdrv.@profile fw(gm, gip)
-    end
+    CUDAdrv.@profile fw(gm, gip)
+
     println()
 end
 
@@ -128,8 +131,7 @@ function profile_torchjl(batchsize)
     yield()
     Torch.clear_cache()
 
-    NVTX.@range "Profiling Torch" begin
-        CUDAdrv.@profile fw_aten(tm, tip)
-    end
+    CUDAdrv.@profile fw_aten(tm, tip)
+
     println()
 end
