@@ -162,17 +162,17 @@ m.summary()
 
 @nvtx_tf.ops.trace(message='Model', domain_name='Forward',
                    grad_domain_name='Gradient', enabled=True, trainable=True)
-def profile(ip):
-    return m.predict(ip)
+def profile(input):
+    return m.predict(input)
 
 
 def benchmark(batchsize):
-    ip = tf.convert_to_tensor(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
+    ip = np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
 
     # warmup
-    profile(ip)
+    profile(tf.convert_to_tensor(ip))
 
-    profile(ip)
+    profile(tf.convert_to_tensor(ip))
 
 
 if __name__ == '__main__':
