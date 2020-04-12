@@ -75,21 +75,24 @@ def Darknet19():
     return model
 
 
+m = Darknet19()
+m.compile(optimizer='adam', loss=MAE)
+m.summary()
+
+
 @nvtx_tf.ops.trace(message='Model', domain_name='Forward',
                    grad_domain_name='Gradient', enabled=True, trainable=True)
-def profile(m, ip):
+def profile(ip):
     return m.predict(ip)
 
 
 def benchmark(batchsize):
-    m = Darknet19()
-    m.compile(optimizer='adam', loss=MAE)
-    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
+    ip = tf.convert_to_tensor(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
 
     # warmup
-    profile(m, ip)
+    profile(ip)
 
-    profile(m, ip)
+    profile(ip)
 
 
 if __name__ == '__main__':

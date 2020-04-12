@@ -9,23 +9,24 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 tf.config.optimizer.set_jit(True)  # XLA enabled
 
+m = VGG19()
+m.compile(optimizer='adam', loss=MAE)
+m.summary()
+
 
 @nvtx_tf.ops.trace(message='Model', domain_name='Forward',
                    grad_domain_name='Gradient', enabled=True, trainable=True)
-def profile(m, ip):
+def profile(ip):
     return m.predict(ip)
 
 
 def benchmark(batchsize):
-    m = VGG19()
-    m.compile(optimizer='adam', loss=MAE)
-    m.summary()
-    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
+    ip = tf.convert_to_tensor(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
 
     # warmup
-    profile(m, ip)
+    profile(ip)
 
-    profile(m, ip)
+    profile(ip)
 
 
 if __name__ == '__main__':
