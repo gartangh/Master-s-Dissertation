@@ -13,7 +13,7 @@ def benchmark(batchsize):
     # warmup
     m(ip)
 
-    torch.cuda.nvtx.range_push("Profiling")
+    torch.cuda.nvtx.range_push("VGG19 Torch")
     m(ip)
     torch.cuda.nvtx.range_pop()
 

@@ -14,7 +14,7 @@ m.compile(optimizer='adam', loss=MAE)
 m.summary()
 
 
-@nvtx_tf.ops.trace(message='Model', domain_name='Forward',
+@nvtx_tf.ops.trace(message='VGG19 TensorFlow', domain_name='Forward',
                    grad_domain_name='Gradient', enabled=True, trainable=True)
 def profile(input):
     return m.predict(input)
