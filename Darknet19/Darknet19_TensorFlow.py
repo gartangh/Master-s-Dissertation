@@ -96,4 +96,4 @@ def benchmark(batchsize):
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)

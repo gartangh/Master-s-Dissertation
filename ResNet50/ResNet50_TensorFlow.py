@@ -2,7 +2,7 @@ import numpy as np
 import nvtx.plugins.tf as nvtx_tf
 import tensorflow as tf
 from numpy.random import randn
-from tensorflow.keras.application import ResNet50
+from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.losses import MAE
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -30,4 +30,4 @@ def benchmark(batchsize):
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)

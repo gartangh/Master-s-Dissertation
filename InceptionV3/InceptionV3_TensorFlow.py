@@ -21,7 +21,7 @@ def profile(ip):
 
 
 def benchmark(batchsize):
-    ip = tf.convert_to_tensor(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
+    ip = tf.convert_to_tensor(randn(*(batchsize, 299, 299, 3)), dtype=np.float32)
 
     # warmup
     profile(ip)
@@ -30,4 +30,4 @@ def benchmark(batchsize):
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)

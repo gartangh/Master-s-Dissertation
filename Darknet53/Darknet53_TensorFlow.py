@@ -154,6 +154,7 @@ def Darknet53():
 
     return model
 
+
 m = Darknet53()
 m.compile(optimizer='adam', loss=MAE)
 m.summary()
@@ -175,4 +176,4 @@ def benchmark(batchsize):
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)

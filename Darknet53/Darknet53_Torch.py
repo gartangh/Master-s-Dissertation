@@ -79,7 +79,7 @@ class Darknet53(nn.Module):
 
 def benchmark(batchsize):
     m = Darknet53(DarkResidualBlock, 1000).to(device)
-    ip = torch.randn(batchsize, 3, 299, 299).to(device)
+    ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warmup
     m(ip)
@@ -90,4 +90,4 @@ def benchmark(batchsize):
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)
