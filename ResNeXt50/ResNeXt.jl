@@ -13,7 +13,7 @@ Block(input_channels::Int, intermediate_channels::Int, output_channels::Int) = C
                         ) for _ = 1:32]...,
                         split=true),
     Conv((1, 1), intermediate_channels => output_channels,       pad = (0, 0), stride = (1, 1)),
-    BatchNorm(intermediate_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
+    BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
 )
 
 IdentityBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
@@ -26,7 +26,7 @@ ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
         Block(input_channels, intermediate_channels, output_channels),
         Chain(
             Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
-            BatchNorm(intermediate_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
+            BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
             ),
     ]..., split=false),
     x -> relu.(x),
@@ -35,7 +35,7 @@ ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
 ResNeXt() = Chain(
     # conv1
     Conv((7, 7), 3 => 64, pad = (3, 3), stride = (2, 2)),
-    BatchNorm(32, relu, ϵ = 1f-3, momentum = 0.99f0),
+    BatchNorm(64, relu, ϵ = 1f-3, momentum = 0.99f0),
 
     # conv2
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
