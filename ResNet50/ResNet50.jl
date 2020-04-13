@@ -73,7 +73,7 @@ function benchmark_torchjl(batchsize)
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tm = Flux.fmap(to_tensor, m)
+    tm = Flux.fmap(to_tensor, m.layers)
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warmup
@@ -122,7 +122,7 @@ function profile_torchjl(batchsize)
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tm = Flux.fmap(to_tensor, m)
+    tm = Flux.fmap(to_tensor, m.layers)
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warmup
