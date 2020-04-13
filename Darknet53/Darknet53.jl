@@ -203,7 +203,7 @@ to_tensor(x) = x
 
 function benchmark_julia(batchsize)
     m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
+    ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
@@ -230,7 +230,7 @@ end
 
 function benchmark_torchjl(batchsize)
     m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
+    ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
@@ -258,7 +258,7 @@ end
 
 function profile_julia(batchsize)
     m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
+    ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
@@ -279,7 +279,7 @@ end
 
 function profile_torchjl(batchsize)
     m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
+    ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
     CuArrays.reclaim()
