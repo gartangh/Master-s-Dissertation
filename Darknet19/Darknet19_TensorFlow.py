@@ -84,18 +84,19 @@ m.summary()
                    grad_domain_name='Gradient')
 def profile(inputs):
     x = inputs
-    x = m.predict(x)
+    x = m.predict(x, steps=1)
     return x
 
 
 def benchmark(batchsize):
     ip = np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
+    tip = tf.convert_to_tensor(ip)
 
     # warmup
-    profile(tf.convert_to_tensor(ip))
+    profile(tip)
 
-    profile(tf.convert_to_tensor(ip))
+    profile(tip)
 
 
 if __name__ == '__main__':
-    benchmark(1)
+    benchmark(4)
