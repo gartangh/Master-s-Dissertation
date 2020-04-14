@@ -27,7 +27,7 @@ def Darknet53():
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
     y = Conv2D(64, (3, 3), padding='same', strides=(1, 1))(y)
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
-    x = tf.math.add([x, y])
+    x = tf.math.add(x, y)
 
     # 5
     x = Conv2D(128, (3, 3), padding='same', strides=(2, 2))(x)
@@ -42,7 +42,7 @@ def Darknet53():
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
     y = Conv2D(128, (3, 3), padding='same', strides=(1, 1))(y)
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
-    x = tf.math.add([x, y])
+    x = tf.math.add(x, y)
 
     # 10
     x = Conv2D(256, (3, 3), padding='same', strides=(2, 2))(x)
@@ -81,7 +81,7 @@ def Darknet53():
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
     y = Conv2D(256, (3, 3), padding='same', strides=(1, 1))(y)
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
-    x = tf.math.add([x, y])
+    x = tf.math.add(x, y)
 
     # 27
     x = Conv2D(512, (3, 3), padding='same', strides=(2, 2))(x)
@@ -120,7 +120,7 @@ def Darknet53():
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
     y = Conv2D(512, (3, 3), padding='same', strides=(1, 1))(y)
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
-    x = tf.math.add([x, y])
+    x = tf.math.add(x, y)
 
     # 44
     x = Conv2D(1024, (3, 3), padding='same', strides=(2, 2))(x)
@@ -143,7 +143,7 @@ def Darknet53():
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
     y = Conv2D(1024, (3, 3), padding='same', strides=(1, 1))(y)
     y = LeakyReLU(alpha=0.01)(BatchNormalization(axis=3)(y))
-    x = tf.math.add([x, y])
+    x = tf.math.add(x, y)
 
     # 53
     # Global Mean Pooling layer
