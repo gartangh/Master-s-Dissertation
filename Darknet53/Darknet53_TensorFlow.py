@@ -160,8 +160,8 @@ m.compile(optimizer='adam', loss=MAE)
 m.summary()
 
 
-@nvtx_tf.ops.trace(message='Darknet53 TensorFlow', domain_name='Forward',
-                   grad_domain_name='Gradient', enabled=True, trainable=True)
+# @nvtx_tf.ops.trace(message='Darknet53 TensorFlow', domain_name='Forward',
+#                    grad_domain_name='Gradient', enabled=True, trainable=True)
 def profile(input):
     return m.predict(input)
 

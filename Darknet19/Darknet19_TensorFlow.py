@@ -9,7 +9,7 @@ from tensorflow.keras.models import Sequential
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 tf.config.optimizer.set_jit(True)  # XLA enabled
-tf.compat.v1.disable_eager_execution()
+
 
 def Darknet19():
     model = Sequential([
@@ -80,24 +80,20 @@ m.compile(optimizer='adam', loss=MAE)
 m.summary()
 
 
-@nvtx_tf.ops.trace(message='Profiling TensorFlow', domain_name='Forward',
-                   grad_domain_name='Gradient')
-def profile(inputs):
-    x = inputs
-    x = m.predict(x, steps=1)
-    return x
+# @nvtx_tf.ops.trace(message='Darknet19 TensorFlow', domain_name='Forward',
+#                    grad_domain_name='Gradient', enabled=True, trainable=True)
+def profile(input):
+    return m.predict(input)
 
 
 def benchmark(batchsize):
-    tip = tf.keras.backend.random_uniform(
-        (batchsize, 224, 224, 3), minval=0.0, maxval=1.0, dtype=None, seed=None
-    )
+    ip = np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
 
     # warmup
-    profile(tip)
+    profile(tf.convert_to_tensor(ip))
 
-    profile(tip)
+    profile(tf.convert_to_tensor(ip))
 
 
 if __name__ == '__main__':
-    benchmark(4)
+    benchmark(1)
