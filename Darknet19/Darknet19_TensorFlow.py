@@ -89,8 +89,9 @@ def profile(inputs):
 
 
 def benchmark(batchsize):
-    ip = np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
-    tip = tf.convert_to_tensor(ip)
+    tip = tf.keras.backend.random_uniform(
+        (batchsize, 224, 224, 3), minval=0.0, maxval=1.0, dtype=None, seed=None
+    )
 
     # warmup
     profile(tip)
