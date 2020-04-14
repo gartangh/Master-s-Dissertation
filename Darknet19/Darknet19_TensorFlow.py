@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import nvtx.plugins.tf as nvtx_tf
 import tensorflow as tf
@@ -91,6 +93,8 @@ def benchmark(batchsize):
 
     # warmup
     profile(tf.convert_to_tensor(ip))
+
+    time.sleep(10)
 
     profile(tf.convert_to_tensor(ip))
 

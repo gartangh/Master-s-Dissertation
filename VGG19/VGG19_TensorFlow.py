@@ -1,9 +1,10 @@
 import numpy as np
-import nvtx.plugins.tf as nvtx_tf
+# import nvtx.plugins.tf as nvtx_tf
 import tensorflow as tf
 from numpy.random import randn
 from tensorflow.keras.applications import VGG19
 from tensorflow.keras.losses import MAE
+import time
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -25,6 +26,8 @@ def benchmark(batchsize):
 
     # warmup
     profile(tf.convert_to_tensor(ip))
+
+    time.sleep(10)
 
     profile(tf.convert_to_tensor(ip))
 
