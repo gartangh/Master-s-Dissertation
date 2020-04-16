@@ -7,21 +7,6 @@ using Torch
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
-# split of chunks
-function _chunk(t::Tensor{T,N}, chunks=2, dims=1) where {T,N}
-  ts = [Ptr{Cvoid}() for _ in 1:chunks]
-  Torch.atg_chunk(ts, t.ptr, chunks, N - dims)
-  [Tensor{T,N}(ts[i], Torch.on(t)) for i in 1:chunks]
-end
-
-# concatenate
-function Base.cat(ts::Tensor{Float32,N}...; dims = 1) where {N}
-  ptr = Ref(Ptr{Cvoid}())
-  ts_arr = [i.ptr for i in ts]
-  Torch.atg_cat(ptr, ts_arr, length(ts_arr), N - dims)
-  Tensor{Float32,N}(ptr[], Torch.on(ts[1]))
-end
-
 # grouped convolution for Tensor
 function (group::GroupedConvolutions)(input::Tensor{Float32,4})
   # get input size
@@ -41,7 +26,7 @@ function (group::GroupedConvolutions)(input::Tensor{Float32,4})
 
     # calculate the output for the grouped convolutions
     # group.connection([path(input[:,:,_start_index(path_index, nmaps_per_path):_stop_index(path_index, nmaps_per_path),:]) for (path_index, path) in enumerate(group.paths)]...)
-    chunks::Vector{Tensor{Float32,4}} = _chunk(input, npaths, 3)
+    chunks::Vector{Tensor{Float32,4}} = Torch._chunk(input, npaths, 3)
     group.connection([path(chunks[path_index]) for (path_index, path) in enumerate(group.paths)]...)
   else
     # uses the complete input for each path
