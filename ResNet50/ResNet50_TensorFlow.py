@@ -1,7 +1,7 @@
 import time
 
 import numpy as np
-import nvtx.plugins.tf as nvtx_tf
+# import nvtx.plugins.tf as nvtx_tf
 import tensorflow as tf
 from numpy.random import randn
 from tensorflow.keras.applications import ResNet50

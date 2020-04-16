@@ -199,6 +199,7 @@ def ResNeXt50():
 
 m = ResNeXt50()
 m.compile(optimizer='adam', loss=MAE)
+m.build(input_shape=(None, 224, 224, 3))
 m.summary()
 
 
