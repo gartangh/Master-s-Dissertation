@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from timeit import timeit
 
 import numpy as np
 import torch
@@ -150,17 +151,26 @@ class Darknet19(BaseModel):
         return out
 
 
+m = Darknet19().to(device)
+
+
 def benchmark(batchsize):
-    m = Darknet19().to(device)
     ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warmup
     m(ip)
 
+    # benchmark
+    print(timeit(lambda: m(ip), number=10))
+
+
+def profile(batchsize):
+    ip = torch.randn(batchsize, 3, 224, 224).to(device)
+
+    # warmup
+    m.predict(ip)
+
+    # profile
     torch.cuda.nvtx.range_push("Darknet19 Torch")
     m(ip)
     torch.cuda.nvtx.range_pop()
-
-
-if __name__ == '__main__':
-    benchmark(1)

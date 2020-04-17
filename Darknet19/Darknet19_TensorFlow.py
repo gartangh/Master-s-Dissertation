@@ -1,7 +1,7 @@
 import time
+from timeit import timeit
 
 import numpy as np
-import nvtx.plugins.tf as nvtx_tf
 import tensorflow as tf
 from numpy.random import randn
 from tensorflow.keras.layers import BatchNormalization, Conv2D, LeakyReLU, GlobalAveragePooling2D, MaxPool2D, Softmax
@@ -82,22 +82,23 @@ m.compile(optimizer='adam', loss=MAE)
 m.summary()
 
 
-# @nvtx_tf.ops.trace(message='Darknet19 TensorFlow', domain_name='Forward',
-#                    grad_domain_name='Gradient', enabled=True, trainable=True)
-def profile(input):
-    return m.predict(input)
-
-
 def benchmark(batchsize):
-    ip = np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32)
+    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
     # warmup
-    profile(tf.convert_to_tensor(ip))
+    m.predict(ip)
+
+    # benchmark
+    timeit(lambda: m.predict(ip), number=10)
+
+
+def profile(batchsize):
+    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
+
+    # warmup
+    m.predict(ip)
 
     time.sleep(10)
 
-    profile(tf.convert_to_tensor(ip))
-
-
-if __name__ == '__main__':
-    benchmark(1)
+    # profile
+    m.predict(ip)
