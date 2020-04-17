@@ -79,7 +79,6 @@ def Darknet19():
 
 m = Darknet19()
 m.compile(optimizer='adam', loss=MAE)
-m.summary()
 
 
 def benchmark(batchsize):

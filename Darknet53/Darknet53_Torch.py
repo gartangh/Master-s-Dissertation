@@ -1,3 +1,5 @@
+from timeit import timeit
+
 import torch
 from torch import nn
 
@@ -77,17 +79,26 @@ class Darknet53(nn.Module):
         return nn.Sequential(*layers)
 
 
+m = Darknet53(DarkResidualBlock, 1000).to(device)
+
+
 def benchmark(batchsize):
-    m = Darknet53(DarkResidualBlock, 1000).to(device)
     ip = torch.randn(batchsize, 3, 256, 256).to(device)
 
     # warmup
     m(ip)
 
+    # benchmark
+    print(timeit(lambda: m(ip), number=10))
+
+
+def profile(batchsize):
+    ip = torch.randn(batchsize, 3, 256, 256).to(device)
+
+    # warmup
+    m.predict(ip)
+
+    # profile
     torch.cuda.nvtx.range_push("Darknet53 Torch")
     m(ip)
     torch.cuda.nvtx.range_pop()
-
-
-if __name__ == '__main__':
-    benchmark(1)
