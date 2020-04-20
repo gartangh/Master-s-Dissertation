@@ -8,7 +8,7 @@ print(device)
 m = models.vgg19_bn().to(device)
 
 
-def benchmark(batchsize):
+def benchmark_pytorch(batchsize):
     ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warmup

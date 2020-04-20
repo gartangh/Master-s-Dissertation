@@ -81,7 +81,7 @@ m = Darknet19()
 m.compile(optimizer='adam', loss=MAE)
 
 
-def benchmark(batchsize):
+def benchmark_tensorflow(batchsize):
     ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
     # warmup
