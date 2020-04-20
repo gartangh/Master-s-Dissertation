@@ -71,14 +71,14 @@ Darknet() = Chain(
 )
 
 function fw_aten(m, ip)
-    NVTX.@range "Profiling Torch.jl" begin
+    NVTX.@range "Darknet19 Torch.jl" begin
         m(ip)
         Torch.sync()
     end
 end
 
 function fw(m, ip)
-    NVTX.@range "Profiling Julia" begin
+    NVTX.@range "Darknet19 Julia" begin
         CuArrays.@sync m(ip)
     end
 end

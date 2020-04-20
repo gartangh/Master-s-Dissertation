@@ -1,6 +1,5 @@
 import logging
 from collections import OrderedDict
-from timeit import timeit
 
 import numpy as np
 import torch
@@ -158,29 +157,20 @@ def benchmark(batchsize):
     ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warmup
-    m(ip)
-
-    # benchmark
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-
-    start.record()
-    m(ip)
-    end.record()
-
-    # Waits for everything to finish running
-    torch.cuda.synchronize()
-
-    print(start.elapsed_time(end))
-
-
-def profile(batchsize):
-    ip = torch.randn(batchsize, 3, 224, 224).to(device)
-
-    # warmup
-    m.predict(ip)
-
-    # profile
-    torch.cuda.nvtx.range_push("Darknet19 Torch")
+    torch.cuda.nvtx.range_push("Darknet19 PyTorch")
     m(ip)
     torch.cuda.nvtx.range_pop()
+
+    for _ in range(10):
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+        start.record()
+        torch.cuda.nvtx.range_push("Darknet19 PyTorch")
+        m(ip)
+        torch.cuda.nvtx.range_pop()
+        end.record()
+
+        # Waits for everything to finish running
+        torch.cuda.synchronize()
+
+        print(start.elapsed_time(end))

@@ -1,5 +1,3 @@
-from timeit import timeit
-
 import torch
 from torch import nn
 
@@ -86,29 +84,20 @@ def benchmark(batchsize):
     ip = torch.randn(batchsize, 3, 256, 256).to(device)
 
     # warmup
-    m(ip)
-
-    # benchmark
-    start = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-
-    start.record()
-    m(ip)
-    end.record()
-
-    # Waits for everything to finish running
-    torch.cuda.synchronize()
-
-    print(start.elapsed_time(end))
-
-
-def profile(batchsize):
-    ip = torch.randn(batchsize, 3, 256, 256).to(device)
-
-    # warmup
-    m.predict(ip)
-
-    # profile
-    torch.cuda.nvtx.range_push("Darknet53 Torch")
+    torch.cuda.nvtx.range_push("Darknet53 PyTorch")
     m(ip)
     torch.cuda.nvtx.range_pop()
+
+    for _ in range(10):
+        start = torch.cuda.Event(enable_timing=True)
+        end = torch.cuda.Event(enable_timing=True)
+        start.record()
+        torch.cuda.nvtx.range_push("Darknet53 PyTorch")
+        m(ip)
+        torch.cuda.nvtx.range_pop()
+        end.record()
+
+        # Waits for everything to finish running
+        torch.cuda.synchronize()
+
+        print(start.elapsed_time(end))

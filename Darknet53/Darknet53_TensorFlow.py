@@ -166,17 +166,8 @@ def benchmark(batchsize):
     # warmup
     m.predict(ip)
 
+    time.sleep(10)
+
     # benchmark
     print(timeit(lambda: m.predict(ip), number=10))
 
-
-def profile(batchsize):
-    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 256, 256, 3)), dtype=np.float32))
-
-    # warmup
-    m.predict(ip)
-
-    time.sleep(10)
-
-    # profile
-    m.predict(ip)

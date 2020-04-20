@@ -8,14 +8,14 @@ DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
 function fw_aten(m, ip)
-    NVTX.@range "Profiling Torch.jl" begin
+    NVTX.@range "ResNet50 Torch.jl" begin
         m(ip)
         Torch.sync()
     end
 end
 
 function fw(m, ip)
-    NVTX.@range "Profiling Julia" begin
+    NVTX.@range "ResNet50 Julia" begin
         CuArrays.@sync m(ip)
     end
 end
@@ -60,7 +60,11 @@ function benchmark_julia(batchsize)
     )
     display(run(b))
 
-    CuArrays.@time fw(gm, gip)
+    for _ in 1:5
+        CuArrays.@time fw(gm, gip)
+        GC.gc()
+        CuArrays.reclaim()
+    end
 
     println()
 end
@@ -88,50 +92,12 @@ function benchmark_torchjl(batchsize)
     )
     display(run(b))
 
-    CuArrays.@time fw_aten(tm, tip)
-
-    println()
-end
-
-function profile_julia(batchsize)
-    m = ResNet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CuArrays.reclaim()
-    Torch.clear_cache()
-
-    gm = m |> gpu
-    gip = ip |> gpu
-
-    # warmup
-    fw(gm, gip)
-    GC.gc()
-    CuArrays.reclaim()
-
-    CUDAdrv.@profile fw(gm, gip)
-
-    println()
-end
-
-function profile_torchjl(batchsize)
-    m = ResNet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CuArrays.reclaim()
-    Torch.clear_cache()
-
-    tm = Flux.fmap(to_tensor, m.layers)
-    tip = tensor(ip, dev = DEVICE_ID)
-
-    # warmup
-    fw_aten(tm, tip)
-    GC.gc()
-    yield()
-    Torch.clear_cache()
-
-    CUDAdrv.@profile fw_aten(tm, tip)
+    for _ in 1:5
+        CuArrays.@time fw_aten(tm, tip)
+        GC.gc()
+        yield()
+        Torch.clear_cache()
+    end
 
     println()
 end
