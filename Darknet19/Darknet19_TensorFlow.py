@@ -1,6 +1,6 @@
 import time
 from timeit import timeit
-import nvtx.plugins.tf as nvtx_tf
+
 import numpy as np
 import tensorflow as tf
 from numpy.random import randn
@@ -85,15 +85,11 @@ def benchmark_tensorflow(batchsize):
     ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
     # warmup
-    ip, nvtx_context = nvtx_tf.ops.start(ip, message='Dense 1-3',
-                                        domain_name='Forward', grad_domain_name='Gradient')
-    op = m.predict(ip)
-    op = nvtx_tf.ops.end(op, nvtx_context)
+    m.predict(ip)
 
     for _ in range(10):
-        ip, nvtx_context = nvtx_tf.ops.start(ip, message='Darknet19 TensorFlow',domain_name='Forward', grad_domain_name='Gradient')
-        op = m.predict(ip)
-        op = nvtx_tf.ops.end(op, nvtx_context)
+        time.sleep(1)
+        m.predict(ip)
 
     time.sleep(10)
 
