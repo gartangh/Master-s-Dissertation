@@ -22,7 +22,7 @@ def benchmark(batchsize):
     m.predict(ip)
 
     # benchmark
-    timeit(lambda: m.predict(ip), number=10)
+    print(timeit(lambda: m.predict(ip), number=10))
 
 
 def profile(batchsize):
