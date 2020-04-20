@@ -117,11 +117,11 @@ function benchmark_julia(batchsize)
     GC.gc()
     CuArrays.reclaim()
 
-    b = @benchmarkable(
-        fw($gm, $gip),
-        teardown = (GC.gc(); CuArrays.reclaim())
-    )
-    display(run(b))
+    # b = @benchmarkable(
+    #     fw($gm, $gip),
+    #     teardown = (GC.gc(); CuArrays.reclaim())
+    # )
+    # display(run(b))
 
     CuArrays.@time fw(gm, gip)
 
@@ -145,56 +145,7 @@ function benchmark_torchjl(batchsize)
     yield()
     Torch.clear_cache()
 
-    b = @benchmarkable(
-        fw_aten($tm, $tip),
-        teardown = (GC.gc(); yield(); Torch.clear_cache())
-    )
-    display(run(b))
-
     CuArrays.@time fw_aten(tm, tip)
-
-    println()
-end
-
-function profile_julia(batchsize)
-    m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CuArrays.reclaim()
-    Torch.clear_cache()
-
-    gm = m |> gpu
-    gip = ip |> gpu
-
-    # warmup
-    fw(gm, gip)
-    GC.gc()
-    CuArrays.reclaim()
-
-    CUDAdrv.@profile fw(gm, gip)
-
-    println()
-end
-
-function profile_torchjl(batchsize)
-    m = Darknet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CuArrays.reclaim()
-    Torch.clear_cache()
-
-    tm = Flux.fmap(to_tensor, m)
-    tip = tensor(ip, dev = DEVICE_ID)
-
-    # warmup
-    fw_aten(tm, tip)
-    GC.gc()
-    yield()
-    Torch.clear_cache()
-
-    CUDAdrv.@profile fw_aten(tm, tip)
 
     println()
 end
