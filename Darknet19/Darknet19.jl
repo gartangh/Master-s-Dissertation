@@ -117,18 +117,16 @@ function benchmark_julia(batchsize)
     GC.gc()
     CuArrays.reclaim()
 
-    # b = @benchmarkable(
-    #     fw($gm, $gip),
-    #     teardown = (GC.gc(); CuArrays.reclaim())
-    # )
-    # display(run(b))
-
-    CuArrays.@time fw(gm, gip)
+    for _ in 1:10
+        CuArrays.@time fw(gm, gip)
+        GC.gc()
+        CuArrays.reclaim()
+    end
 
     println()
 end
 
-function benchmark_torchjl(batchsize)
+function torchjl(batchsize)
     m = Darknet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
@@ -145,7 +143,12 @@ function benchmark_torchjl(batchsize)
     yield()
     Torch.clear_cache()
 
-    CuArrays.@time fw_aten(tm, tip)
+    for _ in 1:10
+        CuArrays.@time fw_aten(tm, tip)
+        GC.gc()
+        yield()
+        Torch.clear_cache()
+    end
 
     println()
 end
