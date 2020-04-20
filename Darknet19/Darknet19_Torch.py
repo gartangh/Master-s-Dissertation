@@ -161,7 +161,17 @@ def benchmark(batchsize):
     m(ip)
 
     # benchmark
-    print(timeit(lambda: m(ip), number=10))
+    start = torch.cuda.Event(enable_timing=True)
+    end = torch.cuda.Event(enable_timing=True)
+
+    start.record()
+    m(ip)
+    end.record()
+
+    # Waits for everything to finish running
+    torch.cuda.synchronize()
+
+    print(start.elapsed_time(end))
 
 
 def profile(batchsize):
