@@ -8,7 +8,7 @@ print(device)
 m = models.resnet50().to(device)
 
 
-def benchmark(batchsize):
+def benchmark_pytorch(batchsize):
     ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warmup
