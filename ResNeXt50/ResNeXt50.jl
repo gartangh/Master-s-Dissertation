@@ -63,24 +63,21 @@ ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
     x -> relu.(x),
 )
 
-ResNeXt() = Chain(
+ResNeXt50 = Chain(
     # conv1
     Conv((7, 7), 3 => 64, pad = (3, 3), stride = (2, 2)),
     BatchNorm(64, relu, ϵ = 1f-3, momentum = 0.99f0),
-
     # conv2
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(64, 128, 256),
     IdentityBlock(256, 128, 256),
     IdentityBlock(256, 128, 256),
-
     # conv3
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(256, 256, 512),
     IdentityBlock(512, 256, 512),
     IdentityBlock(512, 256, 512),
     IdentityBlock(512, 256, 512),
-
     # conv4
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(512, 512, 1024),
@@ -89,18 +86,16 @@ ResNeXt() = Chain(
     IdentityBlock(1024, 512, 1024),
     IdentityBlock(1024, 512, 1024),
     IdentityBlock(1024, 512, 1024),
-
     # conv5
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(1024, 1024, 2048),
     IdentityBlock(2048, 1024, 2048),
     IdentityBlock(2048, 1024, 2048),
-    # Global Mean Pooling layer
-    GlobalMeanPool(),
-    flatten,
-    # Fully connected layer with softmax activation
-    Dense(2048, 1000),
-    softmax,
+
+    GlobalMeanPool(), # Global Mean Pooling layer
+    flatten, # Flattening operation
+    Dense(2048, 1000), # Fully Connected or Dense layer
+    softmax, # Softmax activation
 )
 
 function fw_aten(m, ip)
@@ -111,7 +106,7 @@ function fw_aten(m, ip)
 end
 
 function fw(m, ip)
-    NVTX.@range "ResNeXt50 Julia" begin
+    NVTX.@range "ResNeXt50 Flux" begin
         CuArrays.@sync m(ip)
     end
 end
@@ -134,8 +129,8 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_julia(batchsize)
-    m = ResNeXt()
+function benchmark_flux(batchsize)
+    m = ResNeXt50
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
@@ -145,7 +140,7 @@ function benchmark_julia(batchsize)
     gm = m |> gpu
     gip = ip |> gpu
 
-    # warmup
+    # warm-up
     fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
@@ -166,7 +161,7 @@ function benchmark_julia(batchsize)
 end
 
 function benchmark_torchjl(batchsize)
-    m = ResNeXt()
+    m = ResNeXt50
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
@@ -176,7 +171,7 @@ function benchmark_torchjl(batchsize)
     tm = Flux.fmap(to_tensor, m)
     tip = tensor(ip, dev = DEVICE_ID)
 
-    # warmup
+    # warm-up
     fw_aten(tm, tip)
     GC.gc()
     yield()

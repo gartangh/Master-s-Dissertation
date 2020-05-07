@@ -7,6 +7,8 @@ using Torch
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
+VGG19 = VGG19()
+
 function fw_aten(m, ip)
     NVTX.@range "VGG19 Torch.jl" begin
         m(ip)
@@ -15,7 +17,7 @@ function fw_aten(m, ip)
 end
 
 function fw(m, ip)
-    NVTX.@range "VGG19 Julia" begin
+    NVTX.@range "VGG19 Flux" begin
         CuArrays.@sync m(ip)
     end
 end
@@ -38,8 +40,8 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_julia(batchsize)
-    m = VGG19()
+function benchmark_flux(batchsize)
+    m = VGG19
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
@@ -49,7 +51,7 @@ function benchmark_julia(batchsize)
     gm = m |> gpu
     gip = ip |> gpu
 
-    # warmup
+    # warm-up
     fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
@@ -70,7 +72,7 @@ function benchmark_julia(batchsize)
 end
 
 function benchmark_torchjl(batchsize)
-    m = VGG19()
+    m = VGG19
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
@@ -80,7 +82,7 @@ function benchmark_torchjl(batchsize)
     tm = Flux.fmap(to_tensor, m.layers)
     tip = tensor(ip, dev = DEVICE_ID)
 
-    # warmup
+    # warm-up
     fw_aten(tm, tip)
     GC.gc()
     yield()

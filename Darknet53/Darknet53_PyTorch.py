@@ -83,7 +83,7 @@ m = Darknet53(DarkResidualBlock, 1000).to(device)
 def benchmark_pytorch(batchsize):
     ip = torch.randn(batchsize, 3, 256, 256).to(device)
 
-    # warmup
+    # warm-up
     torch.cuda.nvtx.range_push("Darknet53 PyTorch")
     m(ip)
     torch.cuda.nvtx.range_pop()

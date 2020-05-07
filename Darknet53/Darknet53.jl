@@ -7,14 +7,14 @@ using Torch
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
-Darknet() = Chain(
+Darknet53 = Chain(
   # 1-2
   Conv((3, 3), 3 => 32, pad = (1, 1), stride = (1, 1)),
   BatchNorm(32, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
   Conv((3, 3), 32 => 64, pad = (1, 1), stride = (2, 2)),
   BatchNorm(64, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
-
   # 3-4
+  # Residual block
   SkipConnection(
     Chain(
       Conv((1, 1), 64 => 32, pad = (0, 0), stride = (1, 1)),
@@ -24,13 +24,11 @@ Darknet() = Chain(
     ),
     +,
   ),
-  # Residual layer
-
   # 5
   Conv((3, 3), 64 => 128, pad = (1, 1), stride = (2, 2)),
   BatchNorm(128, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
-
   # 6-9
+  # Residual block
   SkipConnection(
     Chain(
       Conv((1, 1), 128 => 64, pad = (0, 0), stride = (1, 1)),
@@ -44,12 +42,11 @@ Darknet() = Chain(
     ),
     +,
   ),
-
   # 10
   Conv((3, 3), 128 => 256, pad = (1, 1), stride = (2, 2)),
   BatchNorm(256, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
-
   # 11-26
+  # Residual block
   SkipConnection(
     Chain(
       Conv((1, 1), 256 => 128, pad = (0, 0), stride = (1, 1)),
@@ -87,13 +84,11 @@ Darknet() = Chain(
     ),
     +,
   ),
-  # Residual layer
-
   # 27
   Conv((3, 3), 256 => 512, pad = (1, 1), stride = (2, 2)),
   BatchNorm(512, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
-
   # 28-43
+  # Residual block
   SkipConnection(
     Chain(
       Conv((1, 1), 512 => 256, pad = (0, 0), stride = (1, 1)),
@@ -131,13 +126,11 @@ Darknet() = Chain(
     ),
     +,
   ),
-  # Residual layer
-
   # 44
   Conv((3, 3), 512 => 1024, pad = (1, 1), stride = (2, 2)),
   BatchNorm(1024, leakyrelu, ϵ = 1f-3, momentum = 0.99f0),
-
   # 45-52
+  # Residual block
   SkipConnection(
     Chain(
       Conv((1, 1), 1024 => 512, pad = (0, 0), stride = (1, 1)),
@@ -159,15 +152,12 @@ Darknet() = Chain(
     ),
     +,
   ),
-  # Residual layer
 
+  GlobalMeanPool(), # Global Mean Pooling layer
+  flatten, # Flattening operation
   # 53
-  # Global Mean Pooling layer
-  GlobalMeanPool(),
-  flatten,
-  # Fully connected layer with softmax activation
-  Dense(1024, 1000),
-  softmax,
+  Dense(1024, 1000), # Fully Connected or Dense layer
+  softmax, # Softmax activation
 )
 
 function fw_aten(m, ip)
@@ -178,7 +168,7 @@ function fw_aten(m, ip)
 end
 
 function fw(m, ip)
-    NVTX.@range "Darknet53 Julia" begin
+    NVTX.@range "Darknet53 Flux" begin
         CuArrays.@sync m(ip)
     end
 end
@@ -201,8 +191,8 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_julia(batchsize)
-    m = Darknet()
+function benchmark_flux(batchsize)
+    m = Darknet53
     ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
@@ -212,7 +202,7 @@ function benchmark_julia(batchsize)
     gm = m |> gpu
     gip = ip |> gpu
 
-    # warmup
+    # warm-up
     fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
@@ -233,7 +223,7 @@ function benchmark_julia(batchsize)
 end
 
 function benchmark_torchjl(batchsize)
-    m = Darknet()
+    m = Darknet53
     ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
     yield()
@@ -243,7 +233,7 @@ function benchmark_torchjl(batchsize)
     tm = Flux.fmap(to_tensor, m)
     tip = tensor(ip, dev = DEVICE_ID)
 
-    # warmup
+    # warm-up
     fw_aten(tm, tip)
     GC.gc()
     yield()

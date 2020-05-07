@@ -156,7 +156,7 @@ m = Darknet19().to(device)
 def benchmark_pytorch(batchsize):
     ip = torch.randn(batchsize, 3, 224, 224).to(device)
 
-    # warmup
+    # warm-up
     torch.cuda.nvtx.range_push("Darknet19 PyTorch")
     m(ip)
     torch.cuda.nvtx.range_pop()

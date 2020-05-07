@@ -163,11 +163,10 @@ m.compile(optimizer='adam', loss=MAE)
 def benchmark_tensorflow(batchsize):
     ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 256, 256, 3)), dtype=np.float32))
 
-    # warmup
+    # warm-up
     m.predict(ip)
 
     time.sleep(10)
 
     # benchmark
     print(timeit(lambda: m.predict(ip), number=10))
-

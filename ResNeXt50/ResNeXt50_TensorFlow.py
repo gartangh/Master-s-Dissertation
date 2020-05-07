@@ -206,7 +206,7 @@ m.build(input_shape=(None, 224, 224, 3))
 def benchmark_tensorflow(batchsize):
     ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
-    # warmup
+    # warm-up
     m.predict(ip)
 
     time.sleep(10)
