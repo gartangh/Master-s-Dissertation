@@ -311,9 +311,9 @@ version = "0.2.3"
 
 [[Flux]]
 deps = ["AbstractTrees", "Adapt", "CodecZlib", "Colors", "CuArrays", "DelimitedFiles", "Juno", "MacroTools", "NNlib", "Pkg", "Printf", "Random", "Reexport", "SHA", "Statistics", "StatsBase", "Test", "ZipFile", "Zygote"]
-path = "/home/gartangh/Documents/Master-s-Dissertation/Flux.jl"
+path = "../Flux.jl"
 uuid = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-version = "0.10.4"
+version = "0.10.5"
 
 [[ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "NaNMath", "Random", "SpecialFunctions", "StaticArrays"]
@@ -795,7 +795,7 @@ version = "0.5.8"
 
 [[Torch]]
 deps = ["Libdl", "NNlib", "Statistics", "YAML", "ZygoteRules"]
-path = "/home/gartangh/Documents/Master-s-Dissertation/Torch.jl"
+path = "../Torch.jl"
 uuid = "6a2ea274-3061-11ea-0d63-ff850051a295"
 version = "0.1.0"
 
@@ -879,7 +879,7 @@ version = "1.2.11+9"
 
 [[Zygote]]
 deps = ["AbstractFFTs", "ArrayLayouts", "DiffRules", "FillArrays", "ForwardDiff", "Future", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "707ceea58e2bd0ff3077ab13a92f8355181d3ee4"
+path = "../Zygote.jl"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
 version = "0.4.20"
 

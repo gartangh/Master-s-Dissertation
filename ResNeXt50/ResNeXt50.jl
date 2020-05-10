@@ -1,4 +1,4 @@
-using Revise
+# using Revise
 using BenchmarkTools
 using Flux
 using CuArrays, CUDAdrv, CUDAnative
@@ -37,14 +37,10 @@ end
 Block(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
     Conv((1, 1), input_channels        => intermediate_channels, pad = (0, 0), stride = (1, 1)),
     BatchNorm(intermediate_channels, relu, ϵ = 1f-3, momentum = 0.99f0),
-    GroupedConvolutions((results...) -> cat(results..., dims=3),
-                        [Chain(
-                            Conv((3,3), intermediate_channels÷32=>intermediate_channels÷32, pad=(1, 1), stride=(1, 1)),
-                            BatchNorm(intermediate_channels÷32, relu, ϵ = 1f-3, momentum = 0.99f0),
-                        ) for _ = 1:32]...,
-                        split=true),
+    GroupwiseConv((3, 3), intermediate_channels=>intermediate_channels, relu, stride=(1, 1), pad=(1, 1), groupcount=32),
+    BatchNorm(intermediate_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
     Conv((1, 1), intermediate_channels => output_channels,       pad = (0, 0), stride = (1, 1)),
-    BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
+    BatchNorm(output_channels, identity,   ϵ = 1f-3, momentum = 0.99f0),
 )
 
 IdentityBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
@@ -192,3 +188,7 @@ function benchmark_torchjl(batchsize)
 
     println()
 end
+
+
+benchmark_flux(4)
+benchmark_torchjl(4)
