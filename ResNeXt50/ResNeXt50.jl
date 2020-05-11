@@ -175,6 +175,3 @@ function benchmark_torchjl(batchsize)
     println()
 end
 
-
-benchmark_flux(8)
-benchmark_torchjl(8)
