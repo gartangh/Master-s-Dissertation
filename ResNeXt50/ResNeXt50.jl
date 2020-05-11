@@ -7,33 +7,6 @@ using Torch
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
-# grouped convolution for Tensor
-function (group::GroupedConvolutions)(input::Tensor{Float32,4})
-  # get input size
-  w::Int64, h::Int64, c::Int64, n::Int64 = size(input)
-  # number of feature maps in input
-  nmaps::Int64 = c
-  # number of paths of the GroupedConvolution
-  npaths::Int64 = size(group.paths, 1)
-
-  if group.split == true
-    # distributes the feature maps of the input over the paths
-    # throw error if number of feature maps not divisible by number of paths
-    mod(nmaps, npaths) == 0 || error("the number of feature maps in the input (", nmaps, ") is not divisible by the number of paths of the GroupedConvolution (", npaths, ")")
-
-    # number of maps per path
-    nmaps_per_path::Int64 = div(nmaps, npaths)
-
-    # calculate the output for the grouped convolutions
-    # group.connection([path(input[:,:,_start_index(path_index, nmaps_per_path):_stop_index(path_index, nmaps_per_path),:]) for (path_index, path) in enumerate(group.paths)]...)
-    chunks::Vector{Tensor{Float32,4}} = Torch._chunk(input, npaths, 3)
-    group.connection([path(chunks[path_index]) for (path_index, path) in enumerate(group.paths)]...)
-  else
-    # uses the complete input for each path
-    group.connection([path(input) for (path) in group.paths]...)
-  end
-end
-
 Block(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
     Conv((1, 1), input_channels        => intermediate_channels, pad = (0, 0), stride = (1, 1)),
     BatchNorm(intermediate_channels, relu, ϵ = 1f-3, momentum = 0.99f0),
@@ -48,16 +21,29 @@ IdentityBlock(input_channels::Int, intermediate_channels::Int, output_channels::
     x -> relu.(x),
 )
 
-ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
-    GroupedConvolutions(+ , [
-        Block(input_channels, intermediate_channels, output_channels),
-        Chain(
-            Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
-            BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
-            ),
-    ]..., split=false),
-    x -> relu.(x),
-)
+struct ConvBlock
+  block
+  chain::Chain
+end
+
+function ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
+    block = Block(input_channels, intermediate_channels, output_channels)
+    chain::Chain = Chain(
+                            Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
+                            BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
+                        )
+   ConvBlock(block, chain)
+ end
+
+Flux.@functor ConvBlock
+
+function (cb::ConvBlock)(input)
+  cb.block(input) + cb.chain(input)
+end
+
+function Base.show(io::IO, cb::ConvBlock)
+  print(io, "ConvBlock(", cb.block, ", ", cb.chain, ")")
+end
 
 ResNeXt50 = Chain(
     # conv1
@@ -188,7 +174,3 @@ function benchmark_torchjl(batchsize)
 
     println()
 end
-
-
-benchmark_flux(4)
-benchmark_torchjl(4)
