@@ -174,3 +174,4 @@ function benchmark_torchjl(batchsize)
 
     println()
 end
+
