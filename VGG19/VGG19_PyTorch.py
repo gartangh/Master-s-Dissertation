@@ -5,7 +5,7 @@ DEVICE_ID = 0
 device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-m = models.vgg19_bn().to(device)
+m = models.vgg19().to(device)
 
 
 def benchmark_pytorch(batchsize):
