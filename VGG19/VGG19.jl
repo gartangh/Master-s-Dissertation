@@ -7,8 +7,6 @@ using Torch
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
 
-VGG19 = VGG19()
-
 function fw_aten(m, ip)
     NVTX.@range "VGG19 Torch.jl" begin
         m(ip)
@@ -41,7 +39,7 @@ to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
 function benchmark_flux(batchsize)
-    m = VGG19
+    m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
