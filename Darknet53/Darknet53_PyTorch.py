@@ -78,6 +78,7 @@ class Darknet53(nn.Module):
 
 
 m = Darknet53(DarkResidualBlock, 1000).to(device)
+m.eval()
 
 
 def benchmark_pytorch(batchsize):

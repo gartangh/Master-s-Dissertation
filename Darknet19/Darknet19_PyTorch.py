@@ -151,6 +151,7 @@ class Darknet19(BaseModel):
 
 
 m = Darknet19().to(device)
+m.eval()
 
 
 def benchmark_pytorch(batchsize):

@@ -8,5 +8,7 @@ __pycache__/
 */qdrep/
 *.qdrep
 *.qdstrm
+*/nsight-cuprof-report/
+*.nsight-cuprof-report
 
 .idea/

@@ -6,6 +6,7 @@ device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu
 print(device)
 
 m = models.resnext50_32x4d().to(device)
+m.eval()
 
 
 def benchmark_pytorch(batchsize):
