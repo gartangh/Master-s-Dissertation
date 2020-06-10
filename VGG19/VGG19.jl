@@ -70,7 +70,7 @@ function benchmark_flux(batchsize)
 end
 
 function benchmark_torchjl(batchsize)
-    m = VGG19
+    m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
