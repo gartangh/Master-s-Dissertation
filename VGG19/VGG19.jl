@@ -3,20 +3,21 @@ using BenchmarkTools
 using Flux, Metalhead
 using CuArrays, CUDAdrv, CUDAnative
 using Torch
+using Torch: torch
 
 DEVICE_ID = 0
 println(CUDAdrv.name(CuDevice(DEVICE_ID)))
+
+function fw(m, ip)
+    NVTX.@range "VGG19 CuArrays.jl" begin
+        CuArrays.@sync m(ip)
+    end
+end
 
 function fw_aten(m, ip)
     NVTX.@range "VGG19 Torch.jl" begin
         m(ip)
         Torch.sync()
-    end
-end
-
-function fw(m, ip)
-    NVTX.@range "VGG19 Flux" begin
-        CuArrays.@sync m(ip)
     end
 end
 
@@ -38,7 +39,7 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_flux(batchsize)
+function benchmark_cuarraysjl(batchsize)
     m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
@@ -69,6 +70,27 @@ function benchmark_flux(batchsize)
     println()
 end
 
+function profile_cuarraysjl(batchsize)
+    m = VGG19()
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    gm = m |> gpu
+    gip = ip |> gpu
+
+    # warm-up
+    CuArrays.@time fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    CuArrays.@time fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+end
+
 function benchmark_torchjl(batchsize)
     m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
@@ -77,7 +99,7 @@ function benchmark_torchjl(batchsize)
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tm = Flux.fmap(to_tensor, m.layers)
+    tm = m.layers |> torch
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warm-up

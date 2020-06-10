@@ -160,16 +160,16 @@ Darknet53 = Chain(
   softmax, # Softmax activation
 )
 
+function fw(m, ip)
+    NVTX.@range "Darknet53 CuArrays.jl" begin
+        CuArrays.@sync m(ip)
+    end
+end
+
 function fw_aten(m, ip)
     NVTX.@range "Darknet53 Torch.jl" begin
         m(ip)
         Torch.sync()
-    end
-end
-
-function fw(m, ip)
-    NVTX.@range "Darknet53 Flux" begin
-        CuArrays.@sync m(ip)
     end
 end
 
@@ -191,7 +191,7 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_flux(batchsize)
+function benchmark_cuarraysjl(batchsize)
     m = Darknet53
     ip = rand(Float32, 256, 256, 3, batchsize)
     GC.gc()
@@ -230,7 +230,7 @@ function benchmark_torchjl(batchsize)
     CuArrays.reclaim()
     Torch.clear_cache()
 
-    tm = Flux.fmap(to_tensor, m)
+    tm = m |> torch
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warm-up
