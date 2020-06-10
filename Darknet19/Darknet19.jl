@@ -125,6 +125,29 @@ function benchmark_cuarraysjl(batchsize)
     println()
 end
 
+function profile_cuarraysjl(batchsize)
+    m = Darknet19
+    ip = rand(Float32, 224, 224, 3, batchsize)
+    GC.gc()
+    yield()
+    CuArrays.reclaim()
+    Torch.clear_cache()
+
+    gm = m |> gpu
+    gip = ip |> gpu
+
+    # warm-up
+    CuArrays.@time fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    CuArrays.@time fw(gm, gip)
+    GC.gc()
+    CuArrays.reclaim()
+
+    CUDAdrv.@profile fw(gm, gip)
+end
+
 function benchmark_torchjl(batchsize)
     m = Darknet19
     ip = rand(Float32, 224, 224, 3, batchsize)
