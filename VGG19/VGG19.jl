@@ -89,6 +89,8 @@ function profile_cuarraysjl(batchsize)
     CuArrays.@time fw(gm, gip)
     GC.gc()
     CuArrays.reclaim()
+
+    CUDAdrv.@profile fw(gm, gip)
 end
 
 function benchmark_torchjl(batchsize)
