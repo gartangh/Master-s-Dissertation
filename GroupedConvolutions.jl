@@ -1,8 +1,7 @@
 using Revise
 using Test
 using Flux
-using CuArrays
-using CUDAdrv
+using CUDA
 
 # sum for 32 paths
 nmaps = 256
@@ -27,7 +26,7 @@ println("Profiling:")
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
 println(size(group(test)))
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
-CUDAdrv.@profile group(test)
+CUDA.@profile group(test)
 println("DONE.")
 
 # concat
@@ -48,7 +47,7 @@ println("Profiling:")
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
 println(size(group(test)))
 test = randn(Float32, (7, 7, nmaps, 16)) |> gpu
-CUDAdrv.@profile group(test)
+CUDA.@profile group(test)
 println("DONE.")
 
 

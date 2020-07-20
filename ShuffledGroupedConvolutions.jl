@@ -1,8 +1,7 @@
 using Revise
 using Test
 using Flux
-using CuArrays
-using CUDAdrv
+using CUDA
 
 test = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
 shuffle_group = ShuffledGroupedConvolutions(GroupedConvolutions(+, [Conv((1,1), 256=>64, pad=(0,0)) for _ in 1:2]..., split=false),
@@ -22,7 +21,7 @@ shuffle_group = ShuffledGroupedConvolutions(GroupedConvolutions(+, [Conv((1,1), 
 
 println("Profiling:")
 println(size(shuffle_group(test)))
-CUDAdrv.@profile shuffle_group(test)
+CUDA.@profile shuffle_group(test)
 println("Done.")
 
 

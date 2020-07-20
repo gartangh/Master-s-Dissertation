@@ -1,8 +1,7 @@
 using Revise
 using Test
 using Flux
-using CuArrays
-using CUDAdrv
+using CUDA
 
 test = reshape(collect(1:7*7*256*16),(7,7,256,16)) |> gpu
 shuffle = ChannelShuffle(8) |> gpu
@@ -20,7 +19,7 @@ shuffle = ChannelShuffle(8) |> gpu
 
 println("Profiling:")
 println(size(shuffle(test)))
-CUDAdrv.@profile shuffle(test)
+CUDA.@profile shuffle(test)
 println("Done.")
 
 

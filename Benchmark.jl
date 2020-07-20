@@ -1,15 +1,15 @@
 using BenchmarkTools
 using Flux, Metalhead
-using CuArrays, CUDAdrv
+using CUDA
 using Torch
 function fw_aten(m, ip)
     m(ip)
     Torch.sync()
 end
 function fw(m, ip)
-    CuArrays.@sync m(ip)
+    CUDA.@sync m(ip)
 end
-# Follow the CuArrays way
+# Follow the CUDA way
 function (tbn::BatchNorm)(x::Tensor)
     tbn.λ.(Torch.batchnorm(x, tbn.γ,  tbn.β,  tbn.μ, tbn.σ², 0, tbn.momentum, tbn.ϵ, 1))
 end
@@ -21,13 +21,13 @@ function benchmark(batchsize=64)
     GC.gc()
     yield()
     Torch.clear_cache()
-    CuArrays.reclaim()
-    # CuArrays
+    CUDA.reclaim()
+    # CUDA
     b = @benchmarkable(
         fw(gresnet, gip),
         setup=(gresnet = $resnet |> gpu;
                gip = gpu($ip)),
-        teardown=(GC.gc(); CuArrays.reclaim()))
+        teardown=(GC.gc(); CUDA.reclaim()))
     display(run(b))
     println()
     # Torch
@@ -46,32 +46,32 @@ function main(batchsize=64)
     GC.gc()
     yield()
     Torch.clear_cache()
-    CuArrays.reclaim()
-    # CuArrays
+    CUDA.reclaim()
+    # CUDA
     gresnet = resnet |> gpu
     gip = gpu(ip)
-    CuArrays.@time fw(gresnet, gip)
+    CUDA.@time fw(gresnet, gip)
     GC.gc()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     # Torch
     tresnet = Flux.fmap(to_tensor, resnet.layers)
     tip = tensor(ip, dev = :gpu)
-    CuArrays.@time fw_aten(tresnet, tip)
+    CUDA.@time fw_aten(tresnet, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
     return
 end
-function profile_cuarrays(batchsize=64)
+function profile_CUDA(batchsize=64)
     resnet = ResNet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     Torch.clear_cache()
     gresnet = resnet |> gpu
     gip = gpu(ip)
-    CUDAdrv.@profile fw(gresnet, gip)
+    CUDA.@profile fw(gresnet, gip)
     return
 end
 function profile_torch(batchsize=64)
@@ -79,10 +79,10 @@ function profile_torch(batchsize=64)
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     Torch.clear_cache()
     tresnet = Flux.fmap(to_tensor, resnet.layers)
     tip = tensor(ip, dev = :gpu)
-    CUDAdrv.@profile fw_aten(tresnet, tip)
+    CUDA.@profile fw_aten(tresnet, tip)
     return
 end

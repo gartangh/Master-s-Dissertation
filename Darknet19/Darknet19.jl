@@ -1,11 +1,11 @@
 using Revise
 using BenchmarkTools
 using Flux
-using CuArrays, CUDAdrv, CUDAnative
+using CUDA
 using Torch
 
 DEVICE_ID = 0
-println(CUDAdrv.name(CuDevice(DEVICE_ID)))
+println(CUDA.name(CuDevice(DEVICE_ID)))
 
 Darknet19 = Chain(
     # 1
@@ -64,8 +64,8 @@ Darknet19 = Chain(
 )
 
 function fw(m, ip)
-    NVTX.@range "Darknet19 CuArrays.jl" begin
-        CuArrays.@sync m(ip)
+    NVTX.@range "Darknet19 CUDA.jl" begin
+        CUDA.@sync m(ip)
     end
 end
 
@@ -76,7 +76,7 @@ function fw_aten(m, ip)
     end
 end
 
-# Follow the CuArrays way
+# Follow the CUDA way
 function (tbn::BatchNorm)(x::Tensor)
     tbn.λ.(Torch.batchnorm(
         x,
@@ -94,12 +94,12 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_cuarraysjl(batchsize)
+function benchmark_cudajl(batchsize)
     m = Darknet19
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     Torch.clear_cache()
 
     gm = m |> gpu
@@ -108,44 +108,44 @@ function benchmark_cuarraysjl(batchsize)
     # warm-up
     fw(gm, gip)
     GC.gc()
-    CuArrays.reclaim()
+    CUDA.reclaim()
 
     b = @benchmarkable(
         fw($gm, $gip),
-        teardown = (GC.gc(); CuArrays.reclaim())
+        teardown = (GC.gc(); CUDA.reclaim())
     )
     display(run(b))
 
     for _ in 1:5
-        CuArrays.@time fw(gm, gip)
+        CUDA.@time fw(gm, gip)
         GC.gc()
-        CuArrays.reclaim()
+        CUDA.reclaim()
     end
 
     println()
 end
 
-function profile_cuarraysjl(batchsize)
+function profile_cudajl(batchsize)
     m = Darknet19
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     Torch.clear_cache()
 
     gm = m |> gpu
     gip = ip |> gpu
 
     # warm-up
-    CuArrays.@time fw(gm, gip)
+    CUDA.@time fw(gm, gip)
     GC.gc()
-    CuArrays.reclaim()
+    CUDA.reclaim()
 
-    CuArrays.@time fw(gm, gip)
+    CUDA.@time fw(gm, gip)
     GC.gc()
-    CuArrays.reclaim()
+    CUDA.reclaim()
 
-    CUDAdrv.@profile fw(gm, gip)
+    CUDA.@profile fw(gm, gip)
 end
 
 function benchmark_torchjl(batchsize)
@@ -153,7 +153,7 @@ function benchmark_torchjl(batchsize)
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CuArrays.reclaim()
+    CUDA.reclaim()
     Torch.clear_cache()
 
     tm = m |> torch
@@ -172,7 +172,7 @@ function benchmark_torchjl(batchsize)
     display(run(b))
 
     for _ in 1:5
-        CuArrays.@time fw_aten(tm, tip)
+        CUDA.@time fw_aten(tm, tip)
         GC.gc()
         yield()
         Torch.clear_cache()

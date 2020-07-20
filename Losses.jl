@@ -1,13 +1,12 @@
 using Revise
 using Flux
-using CuArrays
+using CUDA
 using Random
-using CUDAdrv
-using CUDAnative
+using CUDA
 
 y = bitrand(7,7,1024,16) |> gpu
 logŷ = randn(7,7,1024,16) |> gpu
 ŷ =  σ.(logŷ) |> gpu
 
 binarycrossentropy(ŷ, y)
-CUDAdrv.@profile binarycrossentropy(ŷ, y)
+CUDA.@profile binarycrossentropy(ŷ, y)

@@ -1,8 +1,7 @@
 # using Revise
 using Test
 using Flux
-using CuArrays
-using CUDAdrv
+using CUDA
 
 # SPLIT (C)
 function resnext_split()
