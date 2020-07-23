@@ -1,5 +1,4 @@
 using Revise
-using NNlib
 using Flux
 using CUDA
 using BenchmarkTools

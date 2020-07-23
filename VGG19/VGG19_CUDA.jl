@@ -2,10 +2,17 @@ using Revise
 using BenchmarkTools
 using Flux, Metalhead
 using CUDA
-using Torch
 
 DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
+
+# extend Flux function
+function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
+    σ, b = c.σ, reshape(c.bias, ntuple(_->1, length(c.stride))..., :, 1)
+    cdims = DenseConvDims(x, c.weight; stride=c.stride, padding=c.pad, dilation=c.dilation)
+    # σ.(conv(x, c.weight, cdims) .+ b)
+    conv_bias_act(x, c.weight, cdims, b, σ)
+end
 
 function fw(m, ip)
     NVTX.@range "VGG19 CUDA.jl" begin
@@ -13,38 +20,11 @@ function fw(m, ip)
     end
 end
 
-function fw_aten(m, ip)
-    NVTX.@range "VGG19 Torch.jl" begin
-        m(ip)
-        Torch.sync()
-    end
-end
-
-# Follow the CUDA way
-function (tbn::BatchNorm)(x::Tensor)
-    tbn.λ.(Torch.batchnorm(
-        x,
-        tbn.γ,
-        tbn.β,
-        tbn.μ,
-        tbn.σ²,
-        0,
-        tbn.momentum,
-        tbn.ϵ,
-        1,
-    ))
-end
-
-to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
-to_tensor(x) = x
-
 function benchmark_cudajl(batchsize)
     m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
-    yield()
     CUDA.reclaim()
-    Torch.clear_cache()
 
     gm = m |> gpu
     gip = ip |> gpu
@@ -73,9 +53,7 @@ function profile_cudajl(batchsize)
     m = VGG19()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
-    yield()
     CUDA.reclaim()
-    Torch.clear_cache()
 
     gm = m |> gpu
     gip = ip |> gpu
@@ -90,37 +68,8 @@ function profile_cudajl(batchsize)
     CUDA.reclaim()
 
     CUDA.@profile fw(gm, gip)
-end
-
-function benchmark_torchjl(batchsize)
-    m = VGG19()
-    ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
-    yield()
     CUDA.reclaim()
-    Torch.clear_cache()
-
-    tm = m.layers |> torch
-    tip = tensor(ip, dev = DEVICE_ID)
-
-    # warm-up
-    fw_aten(tm, tip)
-    GC.gc()
-    yield()
-    Torch.clear_cache()
-
-    b = @benchmarkable(
-        fw_aten($tm, $tip),
-        teardown = (GC.gc(); yield(); Torch.clear_cache())
-    )
-    display(run(b))
-
-    for _ in 1:5
-        CUDA.@time fw_aten(tm, tip)
-        GC.gc()
-        yield()
-        Torch.clear_cache()
-    end
 
     println()
 end
