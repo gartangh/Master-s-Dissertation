@@ -1,5 +1,6 @@
 using Revise
 using Flux
+using NNlib
 using CUDA
 using BenchmarkTools
 
@@ -26,7 +27,7 @@ function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
 end
 
 function fw(m, ip)
-    NVTX.@range "Chain CUDA.jl" begin
+    NVTX.@range "ConvBiasAct CUDA.jl" begin
         CUDA.@sync m(ip)
     end
 end
@@ -57,7 +58,7 @@ function benchmark_cudajl(batchsize)
         CUDA.reclaim()
     end
 
-    println("DONE.")
+    println()
 end
 
 function profile_cudajl(batchsize)
@@ -80,5 +81,5 @@ function profile_cudajl(batchsize)
 
     CUDA.@profile fw(gm, gip)
 
-    println("DONE.")
+    println()
 end
