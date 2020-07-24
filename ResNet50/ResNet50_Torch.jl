@@ -8,7 +8,7 @@ DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
 
 function fw(m, ip)
-    NVTX.@range "VGG19 Torch.jl" begin
+    NVTX.@range "ResNet50 Torch.jl" begin
         m(ip)
         Torch.sync()
     end
@@ -33,7 +33,7 @@ to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
 function benchmark_torchjl(batchsize)
-    m = VGG19()
+    m = ResNet()
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()

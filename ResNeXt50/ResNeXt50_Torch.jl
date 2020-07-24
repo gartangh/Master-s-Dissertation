@@ -1,4 +1,4 @@
-# using Revise
+using Revise
 using BenchmarkTools
 using Flux
 using CUDA
@@ -81,12 +81,6 @@ ResNeXt50 = Chain(
 )
 
 function fw(m, ip)
-    NVTX.@range "ResNeXt50 CUDA.jl" begin
-        CUDA.@sync m(ip)
-    end
-end
-
-function fw_aten(m, ip)
     NVTX.@range "ResNeXt50 Torch.jl" begin
         m(ip)
         Torch.sync()
@@ -111,85 +105,30 @@ end
 to_tensor(x::AbstractArray) = tensor(x, dev = DEVICE_ID)
 to_tensor(x) = x
 
-function benchmark_cudajl(batchsize)
-    m = ResNeXt50
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CUDA.reclaim()
-    Torch.clear_cache()
-
-    gm = m |> gpu
-    gip = ip |> gpu
-
-    # warm-up
-    fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
-
-    b = @benchmarkable(
-        fw($gm, $gip),
-        teardown = (GC.gc(); CUDA.reclaim())
-    )
-    display(run(b))
-
-    for _ in 1:5
-        CUDA.@time fw(gm, gip)
-        GC.gc()
-        CUDA.reclaim()
-    end
-
-    println()
-end
-
-function profile_cudajl(batchsize)
-    m = ResNeXt50
-    ip = rand(Float32, 224, 224, 3, batchsize)
-    GC.gc()
-    yield()
-    CUDA.reclaim()
-    Torch.clear_cache()
-
-    gm = m |> gpu
-    gip = ip |> gpu
-
-    # warm-up
-    CUDA.@time fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
-
-    CUDA.@time fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
-
-    CUDA.@profile fw(gm, gip)
-end
-
 function benchmark_torchjl(batchsize)
     m = ResNeXt50
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     yield()
-    CUDA.reclaim()
     Torch.clear_cache()
 
     tm = m |> torch
     tip = tensor(ip, dev = DEVICE_ID)
 
     # warm-up
-    fw_aten(tm, tip)
+    fw(tm, tip)
     GC.gc()
     yield()
     Torch.clear_cache()
 
     b = @benchmarkable(
-        fw_aten($tm, $tip),
+        fw($tm, $tip),
         teardown = (GC.gc(); yield(); Torch.clear_cache())
     )
     display(run(b))
 
     for _ in 1:5
-        CUDA.@time fw_aten(tm, tip)
+        CUDA.@time fw(tm, tip)
         GC.gc()
         yield()
         Torch.clear_cache()
