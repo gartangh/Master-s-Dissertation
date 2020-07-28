@@ -11,10 +11,11 @@ chain = Chain(
             x -> σ.(x),
             x -> relu.(x),
             x -> tanh.(x),
-            x -> trelu.(x),
+            x -> relu6.(x),
             x -> elu.(x),
             x -> identity(x),
             x -> leakyrelu.(x),
+            x -> trelu.(x),
 )
 
 function fw(m, ip)
