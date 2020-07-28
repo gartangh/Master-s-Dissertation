@@ -5,11 +5,11 @@ using CUDA
 
 
 function main()
-    x = randn(Float32, 112, 112, 128, 4) |> gpu
+    x = randn(Float32, 224, 224, 128, 4) |> gpu
     dx = x
     w = randn(Float32, 3, 3, 128, 128) |> gpu
     dw = w
-    y = randn(Float32, 112, 112, 128, 4) |> gpu
+    y = randn(Float32, 224, 224, 128, 4) |> gpu
     dy = y
     cdims = DenseConvDims(x, dw, padding=1) |> gpu
     GC.gc()
