@@ -2,7 +2,6 @@ using Revise
 using BenchmarkTools
 using Flux
 using CUDA
-using Torch
 
 DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
@@ -199,9 +198,7 @@ function profile_cudajl(batchsize)
     m = Darknet53
     ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
-    yield()
     CUDA.reclaim()
-    Torch.clear_cache()
 
     gm = m |> gpu
     gip = ip |> gpu
