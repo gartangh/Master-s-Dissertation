@@ -8,14 +8,18 @@ DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
 
 chain = Chain(
-            x -> σ.(x),
+            x -> σ.(x), # caching kernel launch parameters or loading data?
+            x -> σ.(x), # with cached values
+            x -> σ.(x), # extra run to verify if this is equal to the previous run
             x -> relu.(x),
             x -> tanh.(x),
             x -> relu6.(x),
             x -> elu.(x),
             x -> identity(x),
             x -> leakyrelu.(x),
-            x -> trelu.(x),
+            x -> trelu.(x), # caching kernel launch parameters or loading data?
+            x -> trelu.(x), # with cached values
+            x -> trelu.(x), # extra run to verify if this is equal to the previous run
 )
 
 function fw(m, ip)
@@ -26,7 +30,7 @@ end
 
 function benchmark_cudajl(batchsize)
     m = chain
-    ip = rand(Float32, 224, 224, 128, batchsize)
+    ip = rand(Float32, 28, 28, 128, batchsize)
     GC.gc()
     CUDA.reclaim()
 
