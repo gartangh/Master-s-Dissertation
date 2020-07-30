@@ -30,7 +30,7 @@ end
 
 function benchmark_cudajl(batchsize)
     m = chain
-    ip = rand(Float32, 28, 28, 128, batchsize)
+    ip = rand(Float32, 224, 224, 128, batchsize)
     GC.gc()
     CUDA.reclaim()
 
