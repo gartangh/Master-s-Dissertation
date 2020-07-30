@@ -7,34 +7,36 @@ using BenchmarkTools
 DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
 
-function fw(m, ip)
-    NVTX.@range "Act CUDA.jl" begin
-        CUDA.@sync m(ip)
+
+
+function fw(a, b)
+    NVTX.@range "Bias CUDA.jl" begin
+        CUDA.@sync a .+ b
     end
 end
 
 function benchmark_cudajl(batchsize)
-    m = softmax
-    ip = rand(Float32, 2<<18, batchsize)
+    a = rand(Float32, 224, 224, 128, batchsize)
+    b = rand(Float32, 224, 224, 128, batchsize)
     GC.gc()
     CUDA.reclaim()
 
-    gm = m |> gpu
-    gip = ip |> gpu
+    ga = a |> gpu
+    gb = b |> gpu
 
     # warm-up
-    fw(gm, gip)
+    fw(ga, gb)
     GC.gc()
     CUDA.reclaim()
 
     b = @benchmarkable(
-        fw($gm, $gip),
+        fw($ga, $gb),
         teardown = (GC.gc(); CUDA.reclaim())
     )
     display(run(b))
 
     for _ in 1:5
-        CUDA.@time fw(gm, gip)
+        CUDA.@time fw(ga, gb)
         GC.gc()
         CUDA.reclaim()
     end
@@ -43,24 +45,24 @@ function benchmark_cudajl(batchsize)
 end
 
 function profile_cudajl(batchsize)
-    m = softmax
-    ip = rand(Float32, 2<<18, batchsize)
+    a = rand(Float32, 224, 224, 128, batchsize)
+    b = rand(Float32, 224, 224, 128, batchsize)
     GC.gc()
     CUDA.reclaim()
 
-    gm = m |> gpu
-    gip = ip |> gpu
+    ga = a |> gpu
+    gb = b |> gpu
 
     # warm-up
-    fw(gm, gip)
+    fw(ga, gb)
     GC.gc()
     CUDA.reclaim()
 
-    CUDA.@time fw(gm, gip)
+    CUDA.@time fw(ga, gb)
     GC.gc()
     CUDA.reclaim()
 
-    CUDA.@profile fw(gm, gip)
+    CUDA.@profile fw(ga, gb)
 
     println()
 end

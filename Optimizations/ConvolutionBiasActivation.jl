@@ -27,7 +27,7 @@ function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
 end
 
 function fw(m, ip)
-    NVTX.@range "ConvBiasAct CUDA.jl" begin
+    NVTX.@range "ConvolutionBiasActivation CUDA.jl" begin
         CUDA.@sync m(ip)
     end
 end
