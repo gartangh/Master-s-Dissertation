@@ -13,7 +13,7 @@ chain = Chain(
 )
 
 function fw(m, ip)
-    NVTX.@range "Act CUDA.jl" begin
+    NVTX.@range "Softmax CUDA.jl" begin
         CUDA.@sync m(ip)
     end
 end
