@@ -116,7 +116,7 @@ function benchmark_cudajl(batchsize)
     display(run(b))
 
     b = @benchmarkable(
-        fw3($gm3, $gip),
+        fw4($gm4, $gip),
         teardown = (GC.gc(); CUDA.reclaim())
     )
     display(run(b))
