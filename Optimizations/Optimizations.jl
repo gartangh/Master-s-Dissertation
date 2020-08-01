@@ -11,44 +11,44 @@ config1 = Chain(
             Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
 )
 
-config2 = Chain(
-            Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
-            x -> relu.(x),
-)
-
 # config2 = Chain(
-#             Conv((3, 3), 128 => 128, relu, pad = (1, 1), stride = (1, 1)),
+#             Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
+#             x -> relu.(x),
 # )
 
-config3 = Chain(
-            Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
-            BatchNorm(128),
-            x -> relu.(x),
+config2 = Chain(
+            Conv((3, 3), 128 => 128, relu, pad = (1, 1), stride = (1, 1)),
 )
 
 # config3 = Chain(
 #             Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
-#             BatchNorm(128, relu),
+#             BatchNorm(128),
+#             x -> relu.(x),
 # )
 
-config4 = Chain(
+config3 = Chain(
             Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
-            x -> relu.(x),
-            BatchNorm(128),
+            BatchNorm(128, relu),
 )
 
 # config4 = Chain(
-#             Conv((3, 3), 128 => 128, relu, pad = (1, 1), stride = (1, 1)),
+#             Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1)),
+#             x -> relu.(x),
 #             BatchNorm(128),
 # )
 
+config4 = Chain(
+            Conv((3, 3), 128 => 128, relu, pad = (1, 1), stride = (1, 1)),
+            BatchNorm(128),
+)
+
 # extend Flux function
-# function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
-#     σ, b = c.σ, reshape(c.bias, ntuple(_->1, length(c.stride))..., :, 1)
-#     cdims = DenseConvDims(x, c.weight; stride=c.stride, padding=c.pad, dilation=c.dilation)
-#     # σ.(conv(x, c.weight, cdims) .+ b)
-#     conv_bias_act(x, c.weight, cdims, b, σ)
-# end
+function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
+    σ, b = c.σ, reshape(c.bias, ntuple(_->1, length(c.stride))..., :, 1)
+    cdims = DenseConvDims(x, c.weight; stride=c.stride, padding=c.pad, dilation=c.dilation)
+    # σ.(conv(x, c.weight, cdims) .+ b)
+    conv_bias_act(x, c.weight, cdims, b, σ)
+end
 
 function fw1(m, ip)
     NVTX.@range "config1 CUDA.jl" begin
