@@ -42,14 +42,6 @@ config4 = Chain(
             BatchNorm(128),
 )
 
-# extend Flux function
-function (c::Conv)(x::CuArray{T}) where T<:Union{Float16,Float32,Float64}
-    σ, b = c.σ, reshape(c.bias, ntuple(_->1, length(c.stride))..., :, 1)
-    cdims = DenseConvDims(x, c.weight; stride=c.stride, padding=c.pad, dilation=c.dilation)
-    # σ.(conv(x, c.weight, cdims) .+ b)
-    conv_bias_act(x, c.weight, cdims, b, σ)
-end
-
 function fw1(m, ip)
     NVTX.@range "config1 CUDA.jl" begin
         CUDA.@sync m(ip)

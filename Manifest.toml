@@ -288,7 +288,7 @@ version = "0.2.3"
 
 [[Flux]]
 deps = ["AbstractTrees", "Adapt", "CUDA", "CodecZlib", "Colors", "DelimitedFiles", "Functors", "Juno", "LinearAlgebra", "MacroTools", "NNlib", "Pkg", "Printf", "Random", "Reexport", "SHA", "Statistics", "StatsBase", "Test", "ZipFile", "Zygote"]
-git-tree-sha1 = "a95bba0ee46dc320b34969fa246cc965c20c2c10"
+path = "../Flux.jl"
 uuid = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 version = "0.11.0"
 
