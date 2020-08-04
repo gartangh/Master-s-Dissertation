@@ -15,11 +15,11 @@ println(CUDA.name(CuDevice(DEVICE_ID)))
 # end
 
 Block(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
-    Conv((1, 1), input_channels        => intermediate_channels, pad = (0, 0), stride = (1, 1)),
+    Conv((1, 1), input_channels        => intermediate_channels,        pad = (0, 0), stride = (1, 1)),
     BatchNorm(intermediate_channels, relu, ϵ = 1f-3, momentum = 0.99f0),
-    GroupwiseConv((3, 3), intermediate_channels=>intermediate_channels, relu, stride=(1, 1), pad=(1, 1), groupcount=32),
-    BatchNorm(intermediate_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
-    Conv((1, 1), intermediate_channels => output_channels,       pad = (0, 0), stride = (1, 1)),
+    GroupwiseConv((3, 3), intermediate_channels=>intermediate_channels, pad = (1, 1), stride=(1, 1), groupcount=32),
+    BatchNorm(intermediate_channels, relu, ϵ = 1f-3, momentum = 0.99f0),
+    Conv((1, 1), intermediate_channels => output_channels,              pad = (0, 0), stride = (1, 1)),
     BatchNorm(output_channels, identity,   ϵ = 1f-3, momentum = 0.99f0),
 )
 
@@ -36,16 +36,16 @@ end
 function ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
     block = Block(input_channels, intermediate_channels, output_channels)
     chain::Chain = Chain(
-                            Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
-                            BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
-                        )
+        Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
+        BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
+    )
    ConvBlock(block, chain)
  end
 
 Flux.@functor ConvBlock
 
 function (cb::ConvBlock)(input)
-  cb.block(input) + cb.chain(input)
+  relu.(cb.block(input) .+ cb.chain(input))
 end
 
 function Base.show(io::IO, cb::ConvBlock)
