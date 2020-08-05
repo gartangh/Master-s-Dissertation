@@ -13,55 +13,41 @@ function fw(m, ip)
 end
 
 function benchmark_cudajl(batchsize)
-    m = ResNet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     CUDA.reclaim()
 
-    gm = m |> gpu
-    gip = ip |> gpu
+    gm = ResNet() |> gpu
+    gip = rand(Float32, 224, 224, 3, batchsize)  |> gpu
 
     # warm-up
     fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
+    fw(gm, gip)
 
     b = @benchmarkable(
         fw($gm, $gip),
-        teardown = (GC.gc(); CUDA.reclaim())
     )
     display(run(b))
 
     for _ in 1:5
         CUDA.@time fw(gm, gip)
-        GC.gc()
-        CUDA.reclaim()
     end
 
     println()
 end
 
 function profile_cudajl(batchsize)
-    m = ResNet()
-    ip = rand(Float32, 224, 224, 3, batchsize)
     GC.gc()
     CUDA.reclaim()
 
-    gm = m |> gpu
-    gip = ip |> gpu
+    gm = ResNet() |> gpu
+    gip = rand(Float32, 224, 224, 3, batchsize) |> gpu
 
     # warm-up
-    CUDA.@time fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
+    fw(gm, gip)
+    fw(gm, gip)
 
     CUDA.@time fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
-
     CUDA.@profile fw(gm, gip)
-    GC.gc()
-    CUDA.reclaim()
 
     println()
 end
