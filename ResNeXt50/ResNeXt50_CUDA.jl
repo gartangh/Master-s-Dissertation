@@ -89,17 +89,15 @@ function benchmark_cudajl(batchsize)
     GC.gc()
     CUDA.reclaim()
 
-    gm = ResNeXt50  |> gpu
-    gip = rand(Float32, 224, 224, 3, batchsize)  |> gpu
+    gm = ResNeXt50 |> gpu
+    gip = CUDA.rand(Float32, 224, 224, 3, batchsize)
 
     # warm-up
     fw(gm, gip)
     fw(gm, gip)
 
-    b = @benchmarkable(
-        fw($gm, $gip),
-    )
-    display(run(b))
+    b = @benchmark fw($gm, gip) setup(gip=CUDA.rand(Float32, 224, 224, 3, batchsize))
+    display(b)
 
     for _ in 1:5
         CUDA.@time fw(gm, gip)
@@ -113,7 +111,7 @@ function profile_cudajl(batchsize)
     CUDA.reclaim()
 
     gm = ResNeXt50 |> gpu
-    gip = rand(Float32, 224, 224, 3, batchsize) |> gpu
+    gip = CUDA.rand(Float32, 224, 224, 3, batchsize)
 
     # warm-up
     fw(gm, gip)
