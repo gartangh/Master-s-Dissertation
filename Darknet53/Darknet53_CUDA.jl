@@ -176,11 +176,8 @@ function benchmark_cudajl(batchsize)
     fw(gm, gip)
     fw(gm, gip)
 
-    # b = @benchmark fw($gm, gip) setup=(gip=CUDA.rand(Float32, 256, 256, 3, $batchsize))
-    b = @benchmarkable(
-        fw($gm, $gip)
-    )
-    display(run(b))
+    b = @benchmark fw($gm, gip) setup=(gip=CUDA.rand(Float32, 256, 256, 3, $batchsize))
+    display(b)
 
     for _ in 1:5
         CUDA.@time fw(gm, gip)
