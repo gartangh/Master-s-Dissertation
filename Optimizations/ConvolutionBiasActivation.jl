@@ -8,14 +8,14 @@ DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
 
 chain = Chain(
-            Conv((3, 3), 128 => 128,         σ, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,      relu, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,      tanh, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,     trelu, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,       elu, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,  identity, pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128,            pad = (1, 1), stride = (1, 1)),
-            Conv((3, 3), 128 => 128, leakyrelu, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,         σ, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,      relu, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,      tanh, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,     trelu, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,       elu, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,  identity, pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128,            pad = (1, 1), stride = (1, 1)),
+    Conv((3, 3), 128 => 128, leakyrelu, pad = (1, 1), stride = (1, 1)),
 )
 
 # extend Flux function

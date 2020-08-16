@@ -15,14 +15,14 @@ Block(input_channels::Int, intermediate_channels::Int, output_channels::Int) = C
     BatchNorm(output_channels, identity,   ϵ = 1f-3, momentum = 0.99f0),
 )
 
-IdentityBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
+IdBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) = Chain(
     SkipConnection(Block(input_channels, intermediate_channels, output_channels), +),
     x -> relu.(x),
 )
 
 struct ConvBlock
   block
-  chain::Chain
+  shortcut::Chain
 end
 
 function ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)
@@ -31,7 +31,7 @@ function ConvBlock(input_channels::Int, intermediate_channels::Int, output_chann
         Conv((1, 1), input_channels => output_channels, pad = (0, 0), stride = (1, 1)),
         BatchNorm(output_channels, identity, ϵ = 1f-3, momentum = 0.99f0),
     )
-   ConvBlock(block, chain)
+    ConvBlock(block, chain)
  end
 
 Flux.@functor ConvBlock
@@ -51,27 +51,27 @@ ResNeXt50 = Chain(
     # conv2
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(64, 128, 256),
-    IdentityBlock(256, 128, 256),
-    IdentityBlock(256, 128, 256),
+    IdBlock(256, 128, 256),
+    IdBlock(256, 128, 256),
     # conv3
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(256, 256, 512),
-    IdentityBlock(512, 256, 512),
-    IdentityBlock(512, 256, 512),
-    IdentityBlock(512, 256, 512),
+    IdBlock(512, 256, 512),
+    IdBlock(512, 256, 512),
+    IdBlock(512, 256, 512),
     # conv4
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(512, 512, 1024),
-    IdentityBlock(1024, 512, 1024),
-    IdentityBlock(1024, 512, 1024),
-    IdentityBlock(1024, 512, 1024),
-    IdentityBlock(1024, 512, 1024),
-    IdentityBlock(1024, 512, 1024),
+    IdBlock(1024, 512, 1024),
+    IdBlock(1024, 512, 1024),
+    IdBlock(1024, 512, 1024),
+    IdBlock(1024, 512, 1024),
+    IdBlock(1024, 512, 1024),
     # conv5
     MaxPool((3, 3), pad = (1, 1), stride = (2, 2)),
     ConvBlock(1024, 1024, 2048),
-    IdentityBlock(2048, 1024, 2048),
-    IdentityBlock(2048, 1024, 2048),
+    IdBlock(2048, 1024, 2048),
+    IdBlock(2048, 1024, 2048),
 
     GlobalMeanPool(), # Global Mean Pooling layer
     flatten, # Flattening operation

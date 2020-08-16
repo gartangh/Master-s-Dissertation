@@ -70,21 +70,20 @@ Darknet19 = Sequential([
 ])
 
 
-m = Darknet19
-m.compile(optimizer='adam', loss=MAE)
-
-
 def benchmark_tensorflow(batchsize):
-    ip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
+    gm = Darknet19
+    gm.compile(optimizer='adam', loss=MAE)
+
+    gip = tf.convert_to_tensor(np.array(randn(*(batchsize, 224, 224, 3)), dtype=np.float32))
 
     # warm-up
-    m.predict(ip)
+    gm.predict(gip)
 
     for _ in range(10):
         time.sleep(1)
-        m.predict(ip)
+        gm.predict(gip)
 
     time.sleep(10)
 
     # benchmark
-    print(timeit(lambda: m.predict(ip), number=10))
+    print(timeit(lambda: gm.predict(gip), number=10))

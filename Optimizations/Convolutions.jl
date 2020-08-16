@@ -1,26 +1,12 @@
 using Revise
 using Flux
-using NNlib
 using CUDA
 using BenchmarkTools
 
 DEVICE_ID = 0
 println(CUDA.name(CuDevice(DEVICE_ID)))
 
-chain = Chain(
-    x -> σ.(x), # caching kernel launch parameters or loading data?
-    x -> σ.(x), # with cached values
-    x -> σ.(x), # extra run to verify if this is equal to the previous run
-    x -> relu.(x),
-    x -> tanh.(x),
-    x -> relu6.(x),
-    x -> elu.(x),
-    x -> identity(x),
-    x -> leakyrelu.(x),
-    x -> trelu.(x), # caching kernel launch parameters or loading data?
-    x -> trelu.(x), # with cached values
-    x -> trelu.(x), # extra run to verify if this is equal to the previous run
-)
+chain = Conv((3, 3), 128 => 128, pad = (1, 1), stride = (1, 1))
 
 function fw(m, ip)
     NVTX.@range "Activation CUDA.jl" begin

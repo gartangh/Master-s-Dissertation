@@ -153,22 +153,22 @@ class Darknet19(BaseModel):
 m = Darknet19().to(device)
 m.eval()
 
+def fw(gip, gm):
+    torch.cuda.nvtx.range_push("Darknet19 PyTorch")
+    gm(gip)
+    torch.cuda.nvtx.range_pop()
 
 def benchmark_pytorch(batchsize):
-    ip = torch.randn(batchsize, 3, 224, 224).to(device)
+    gip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warm-up
-    torch.cuda.nvtx.range_push("Darknet19 PyTorch")
-    m(ip)
-    torch.cuda.nvtx.range_pop()
+    fw(gm, gip)
 
     for _ in range(10):
         start = torch.cuda.Event(enable_timing=True)
         end = torch.cuda.Event(enable_timing=True)
         start.record()
-        torch.cuda.nvtx.range_push("Darknet19 PyTorch")
-        m(ip)
-        torch.cuda.nvtx.range_pop()
+        fw(gm, gip)
         end.record()
 
         # Waits for everything to finish running
