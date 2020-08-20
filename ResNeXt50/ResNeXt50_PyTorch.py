@@ -5,16 +5,16 @@ DEVICE_ID = 0
 device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-m = models.resnext50_32x4d().to(device)
-m.eval()
+gm = models.resnext50_32x4d().to(device)
+gm.eval()
 
 
 def benchmark_pytorch(batchsize):
-    ip = torch.randn(batchsize, 3, 224, 224).to(device)
+    gip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warm-up
     torch.cuda.nvtx.range_push("ResNeXt50 PyTorch")
-    m(ip)
+    gm(gip)
     torch.cuda.nvtx.range_pop()
 
     for _ in range(10):

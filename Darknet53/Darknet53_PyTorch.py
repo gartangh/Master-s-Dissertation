@@ -77,16 +77,16 @@ class Darknet53(nn.Module):
         return nn.Sequential(*layers)
 
 
-m = Darknet53(DarkResidualBlock, 1000).to(device)
-m.eval()
+gm = Darknet53(DarkResidualBlock, 1000).to(device)
+gm.eval()
 
 
 def benchmark_pytorch(batchsize):
-    ip = torch.randn(batchsize, 3, 256, 256).to(device)
+    gip = torch.randn(batchsize, 3, 256, 256).to(device)
 
     # warm-up
     torch.cuda.nvtx.range_push("Darknet53 PyTorch")
-    m(ip)
+    gm(gip)
     torch.cuda.nvtx.range_pop()
 
     for _ in range(10):
@@ -94,7 +94,7 @@ def benchmark_pytorch(batchsize):
         end = torch.cuda.Event(enable_timing=True)
         start.record()
         torch.cuda.nvtx.range_push("Darknet53 PyTorch")
-        m(ip)
+        gm(gip)
         torch.cuda.nvtx.range_pop()
         end.record()
 

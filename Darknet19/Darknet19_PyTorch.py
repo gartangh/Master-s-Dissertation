@@ -150,8 +150,8 @@ class Darknet19(BaseModel):
         return out
 
 
-m = Darknet19().to(device)
-m.eval()
+gm = Darknet19().to(device)
+gm.eval()
 
 def fw(gip, gm):
     torch.cuda.nvtx.range_push("Darknet19 PyTorch")

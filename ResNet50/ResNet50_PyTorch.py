@@ -5,16 +5,16 @@ DEVICE_ID = 0
 device = torch.device(f'cuda:{DEVICE_ID}' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-m = models.resnet50().to(device)
-m.eval()
+gm = models.resnet50().to(device)
+gm.eval()
 
 
 def benchmark_pytorch(batchsize):
-    ip = torch.randn(batchsize, 3, 224, 224).to(device)
+    gip = torch.randn(batchsize, 3, 224, 224).to(device)
 
     # warm-up
     torch.cuda.nvtx.range_push("ResNet50 PyTorch")
-    m(ip)
+    gm(gip)
     torch.cuda.nvtx.range_pop()
 
     for _ in range(10):
@@ -22,7 +22,7 @@ def benchmark_pytorch(batchsize):
         end = torch.cuda.Event(enable_timing=True)
         start.record()
         torch.cuda.nvtx.range_push("ResNet50 PyTorch")
-        m(ip)
+        gm(gip)
         torch.cuda.nvtx.range_pop()
         end.record()
 
