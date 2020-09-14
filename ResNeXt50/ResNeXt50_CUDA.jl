@@ -22,7 +22,7 @@ IdBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int) =
 
 struct ConvBlock
   block
-  shortcut::Chain
+  chain::Chain
 end
 
 function ConvBlock(input_channels::Int, intermediate_channels::Int, output_channels::Int)

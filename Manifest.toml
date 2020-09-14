@@ -604,11 +604,9 @@ version = "0.5.0"
 
 [[Metalhead]]
 deps = ["BSON", "ColorTypes", "Flux", "ImageFiltering", "Images", "REPL", "Requires", "Statistics"]
-git-tree-sha1 = "b4291a307b9a9c275ac5c60a0f10d47b6a142ee5"
-repo-rev = "1d9db5e020119601a58cebc4c248cb1dadc0f151"
-repo-url = "https://github.com/FluxML/Metalhead.jl.git"
+git-tree-sha1 = "cb88fc644ac73272f34442aa8160bbe38da2a048"
 uuid = "dbeba491-748d-5e0e-a39e-b530a07fa0cc"
-version = "0.5.0"
+version = "0.5.1"
 
 [[Missings]]
 deps = ["DataAPI"]
